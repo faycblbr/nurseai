@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f3ec;
+  --foreground: #171713;
+  --card: #fffdf8;
+  --muted: #777166;
+  --border: #e4ddd1;
+  --primary: #0f766e;
+  --primary-dark: #0a5f59;
+  --accent: #f26d4f;
+  --accent-strong: #d94f34;
+  --success: #2f9b62;
+  --warning: #b7791f;
+  --danger: #d83f31;
+  --surface: #ece7dc;
+  --surface-strong: #ded5c6;
+  --ink-soft: #34312a;
+  --mint: #e3f3e7;
+  --mint-strong: #2f8a55;
+  --peach: #ffeadf;
+  --peach-strong: #d95f35;
+  --violet: #eee7ff;
+  --violet-strong: #6d5aa8;
+  --gold: #f4c95d;
+  --glass: rgba(255, 253, 248, 0.74);
+  --glass-strong: rgba(255, 253, 248, 0.9);
+  --shadow-soft: rgba(49, 43, 32, 0.1);
+  --ring: rgba(15, 118, 110, 0.16);
+}
+
+.dark {
+  --background: #0d0d0b;
+  --foreground: #f7f1e7;
+  --card: #171713;
+  --muted: #aaa197;
+  --border: #343027;
+  --primary: #5ed0bd;
+  --primary-dark: #35a997;
+  --accent: #ff8a66;
+  --accent-strong: #ff7048;
+  --success: #77d69b;
+  --warning: #f4c95d;
+  --danger: #ff7568;
+  --surface: #211f19;
+  --surface-strong: #2c281f;
+  --ink-soft: #f0e6d8;
+  --mint: #173229;
+  --mint-strong: #87e0ad;
+  --peach: #3a2119;
+  --peach-strong: #ff9b79;
+  --violet: #251f36;
+  --violet-strong: #c6b4ff;
+  --gold: #f4c95d;
+  --glass: rgba(23, 23, 19, 0.76);
+  --glass-strong: rgba(23, 23, 19, 0.92);
+  --shadow-soft: rgba(0, 0, 0, 0.34);
+  --ring: rgba(94, 208, 189, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(242, 109, 79, 0.12), transparent 32rem),
+    radial-gradient(circle at 88% 12%, rgba(15, 118, 110, 0.14), transparent 30rem),
+    linear-gradient(180deg, #fffdf8 0%, var(--background) 48%, #efe8dc 100%);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: var(--ring);
+}
+
+.premium-panel {
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  background:
+    linear-gradient(180deg, var(--glass-strong), var(--glass)),
+    var(--card);
+  box-shadow:
+    0 18px 50px var(--shadow-soft),
+    0 1px 0 rgba(255, 255, 255, 0.32) inset;
+  backdrop-filter: blur(24px);
+}
+
+.mesh-surface {
+  background:
+    radial-gradient(circle at 10% 15%, rgba(244, 201, 93, 0.22), transparent 16rem),
+    radial-gradient(circle at 92% 4%, rgba(94, 208, 189, 0.24), transparent 16rem),
+    linear-gradient(135deg, rgba(255, 253, 248, 0.88), rgba(227, 243, 231, 0.72) 46%, rgba(255, 234, 223, 0.82)),
+    var(--card);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 22% 0%, rgba(255, 138, 102, 0.13), transparent 30rem),
+    radial-gradient(circle at 86% 10%, rgba(94, 208, 189, 0.16), transparent 32rem),
+    linear-gradient(180deg, #11110e 0%, var(--background) 48%, #080806 100%);
+}
+
+.dark .mesh-surface {
+  background:
+    radial-gradient(circle at 10% 15%, rgba(244, 201, 93, 0.14), transparent 16rem),
+    radial-gradient(circle at 92% 4%, rgba(94, 208, 189, 0.18), transparent 16rem),
+    linear-gradient(135deg, rgba(26, 25, 21, 0.92), rgba(25, 48, 41, 0.7) 48%, rgba(58, 33, 25, 0.84)),
+    var(--card);
+}
+
+.dark .bg-white,
+.dark .bg-white\/55,
+.dark .bg-white\/60,
+.dark .bg-white\/62,
+.dark .bg-white\/70,
+.dark .bg-white\/72,
+.dark .bg-white\/75,
+.dark .bg-white\/80,
+.dark .bg-white\/82 {
+  background-color: var(--glass) !important;
+}
+
+.dark .border-white\/70,
+.dark .border-white\/80 {
+  border-color: color-mix(in srgb, var(--border) 86%, transparent) !important;
+}
+
+.dark .shadow-slate-200\/70,
+.dark .shadow-slate-200\/80,
+.dark .shadow-blue-500\/20,
+.dark .shadow-blue-500\/25 {
+  --tw-shadow-color: var(--shadow-soft) !important;
+  --tw-shadow: var(--tw-shadow-colored) !important;
+}
