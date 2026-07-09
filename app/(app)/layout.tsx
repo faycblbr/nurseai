@@ -1,8 +1,19 @@
 import { MobileNav } from "@/components/app/mobile-nav";
 import { Sidebar } from "@/components/app/sidebar";
 import { Topbar } from "@/components/app/topbar";
+import { createSupabaseServerClient } from "@/server/supabase/server";
+import { redirect } from "next/navigation";
 
-export default function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/connexion");
+  }
+
   return (
     <div className="min-h-screen lg:flex">
       <Sidebar />

@@ -5,7 +5,13 @@ import { usePathname } from "next/navigation";
 import { appNavigation } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 
-const mobileItems = appNavigation.slice(0, 5);
+const mobileItems = [
+  appNavigation[0],
+  appNavigation[1],
+  appNavigation[3],
+  appNavigation[4],
+  appNavigation[9]
+];
 
 export function MobileNav() {
   const pathname = usePathname();

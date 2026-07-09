@@ -32,6 +32,8 @@ const userTables = [
   "notifications"
 ] as const;
 
+export const runtime = "nodejs";
+
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   const {

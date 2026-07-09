@@ -5,6 +5,8 @@ import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getStripeClient } from "@/server/stripe/client";
 
+export const runtime = "nodejs";
+
 function redirectToSettings(message: string, isError = false) {
   const key = isError ? "error" : "message";
   return NextResponse.redirect(
