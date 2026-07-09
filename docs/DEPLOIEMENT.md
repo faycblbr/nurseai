@@ -32,7 +32,7 @@ AI_MONTHLY_QUOTA=100
 STRIPE_SECRET_KEY=ta_cle_stripe_quand_le_paiement_est_pret
 STRIPE_PRICE_ID=price_xxxxxxxxx
 STRIPE_WEBHOOK_SECRET=ton_webhook_stripe_quand_pret
-APPLE_BUNDLE_ID=webfabricpro.NurseAI
+APPLE_BUNDLE_ID=com.webfabricpro.nurseai
 APPLE_PREMIUM_PRODUCT_ID=premium_monthly
 ```
 
@@ -193,7 +193,7 @@ Sur iPhone, un abonnement numérique doit passer par l'achat intégré Apple, pa
 4. Remplis:
    - Nom: `NurseAI`
    - Plateforme: `iOS`
-   - Bundle ID: `webfabricpro.NurseAI`
+   - Bundle ID: `com.webfabricpro.nurseai`
    - SKU: `nurseai-ios`
    - Langue principale: `Français`
 
@@ -231,7 +231,7 @@ Ne jamais débloquer le Premium uniquement depuis l'iPhone sans vérification se
 Quand l'app et l'abonnement existent dans App Store Connect, ajoute ensuite dans Vercel:
 
 ```text
-APPLE_BUNDLE_ID=webfabricpro.NurseAI
+APPLE_BUNDLE_ID=com.webfabricpro.nurseai
 APPLE_PREMIUM_PRODUCT_ID=premium_monthly
 APPLE_APP_STORE_CONNECT_ISSUER_ID=...
 APPLE_APP_STORE_CONNECT_KEY_ID=...

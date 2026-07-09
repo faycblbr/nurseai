@@ -11,7 +11,7 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_ID: z.string().optional(),
-  APPLE_BUNDLE_ID: z.string().default("webfabricpro.NurseAI"),
+  APPLE_BUNDLE_ID: z.string().default("com.webfabricpro.nurseai"),
   APPLE_PREMIUM_PRODUCT_ID: z.string().default("premium_monthly"),
   APPLE_APP_STORE_CONNECT_ISSUER_ID: z.string().optional(),
   APPLE_APP_STORE_CONNECT_KEY_ID: z.string().optional(),
