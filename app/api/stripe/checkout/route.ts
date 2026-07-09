@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import type { Route } from "next";
 import { env } from "@/lib/env";
+import { getRequestAppUrl } from "@/lib/app-url";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getStripeClient } from "@/server/stripe/client";
@@ -8,17 +8,19 @@ import { isBillingConfigured } from "@/server/billing/subscription";
 
 export const runtime = "nodejs";
 
-function redirectToActivation(message: string, isError = false) {
+function redirectToActivation(appUrl: string, message: string, isError = false) {
   const key = isError ? "error" : "message";
   return NextResponse.redirect(
-    `${env.NEXT_PUBLIC_APP_URL}/activation?${key}=${encodeURIComponent(message)}`,
+    `${appUrl}/activation?${key}=${encodeURIComponent(message)}`,
     { status: 303 }
   );
 }
 
-async function createCheckout() {
+async function createCheckout(request: Request) {
+  const appUrl = getRequestAppUrl(request);
+
   if (!isBillingConfigured()) {
-    return redirectToActivation("Stripe n'est pas complètement configuré dans Vercel.", true);
+    return redirectToActivation(appUrl, "Stripe n'est pas complètement configuré dans Vercel.", true);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -27,7 +29,7 @@ async function createCheckout() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion?next=/activation` as Route, { status: 303 });
+    return NextResponse.redirect(`${appUrl}/connexion?next=/activation`, { status: 303 });
   }
 
   const admin = createSupabaseAdminClient();
@@ -44,7 +46,7 @@ async function createCheckout() {
     existingSubscription.stripe_subscription_id &&
     (existingSubscription.status === "trialing" || existingSubscription.status === "active")
   ) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/dashboard?message=${encodeURIComponent("Ton accès Premium est déjà actif.")}`, { status: 303 });
+    return NextResponse.redirect(`${appUrl}/dashboard?message=${encodeURIComponent("Ton accès Premium est déjà actif.")}`, { status: 303 });
   }
 
   const { data: profile } = await admin
@@ -110,21 +112,21 @@ async function createCheckout() {
       }
     },
     locale: "fr",
-    success_url: `${env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/activation?error=${encodeURIComponent("Activation annulée.")}`
+    success_url: `${appUrl}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/activation?error=${encodeURIComponent("Activation annulée.")}`
   });
 
   if (!session.url) {
-    return redirectToActivation("Impossible d'ouvrir Stripe Checkout.", true);
+    return redirectToActivation(appUrl, "Impossible d'ouvrir Stripe Checkout.", true);
   }
 
   return NextResponse.redirect(session.url, { status: 303 });
 }
 
-export async function GET() {
-  return createCheckout();
+export async function GET(request: Request) {
+  return createCheckout(request);
 }
 
-export async function POST() {
-  return createCheckout();
+export async function POST(request: Request) {
+  return createCheckout(request);
 }

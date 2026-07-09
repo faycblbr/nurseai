@@ -1,25 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
-import { env } from "@/lib/env";
+import { getRequestAppUrl } from "@/lib/app-url";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getStripeClient } from "@/server/stripe/client";
 import { stripeId, syncStripeSubscription } from "@/server/billing/subscription";
 
 export const runtime = "nodejs";
 
-function redirectToActivation(message: string, isError = false) {
+function redirectToActivation(appUrl: string, message: string, isError = false) {
   const key = isError ? "error" : "message";
   return NextResponse.redirect(
-    `${env.NEXT_PUBLIC_APP_URL}/activation?${key}=${encodeURIComponent(message)}`,
+    `${appUrl}/activation?${key}=${encodeURIComponent(message)}`,
     { status: 303 }
   );
 }
 
 export async function GET(request: NextRequest) {
+  const appUrl = getRequestAppUrl(request);
   const sessionId = request.nextUrl.searchParams.get("session_id");
 
   if (!sessionId) {
-    return redirectToActivation("Session Stripe introuvable.", true);
+    return redirectToActivation(appUrl, "Session Stripe introuvable.", true);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion?next=/activation`, { status: 303 });
+    return NextResponse.redirect(`${appUrl}/connexion?next=/activation`, { status: 303 });
   }
 
   try {
@@ -37,23 +38,23 @@ export async function GET(request: NextRequest) {
     const sessionUserId = session.client_reference_id ?? session.metadata?.supabase_user_id ?? null;
 
     if (sessionUserId !== user.id) {
-      return redirectToActivation("Cette session Stripe ne correspond pas à ton compte.", true);
+      return redirectToActivation(appUrl, "Cette session Stripe ne correspond pas à ton compte.", true);
     }
 
     const subscriptionId = stripeId(session.subscription as Stripe.Checkout.Session["subscription"]);
 
     if (!subscriptionId) {
-      return redirectToActivation("Stripe n'a pas encore créé l'abonnement. Réessaie dans quelques secondes.", true);
+      return redirectToActivation(appUrl, "Stripe n'a pas encore créé l'abonnement. Réessaie dans quelques secondes.", true);
     }
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     await syncStripeSubscription(subscription, user.id);
 
     return NextResponse.redirect(
-      `${env.NEXT_PUBLIC_APP_URL}/dashboard?message=${encodeURIComponent("Essai gratuit activé.")}`,
+      `${appUrl}/dashboard?message=${encodeURIComponent("Essai gratuit activé.")}`,
       { status: 303 }
     );
   } catch {
-    return redirectToActivation("Impossible de confirmer l'activation Stripe.", true);
+    return redirectToActivation(appUrl, "Impossible de confirmer l'activation Stripe.", true);
   }
 }

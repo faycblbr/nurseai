@@ -1,5 +1,16 @@
-import { ArrowRight, CheckCircle2, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  LockKeyhole,
+  ShieldCheck,
+  Sparkles,
+  WandSparkles
+} from "lucide-react";
 import { redirect } from "next/navigation";
+import { AppLogo } from "@/components/app/app-logo";
 import { AuthFeedback } from "@/components/auth/auth-feedback";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -16,11 +27,29 @@ type ActivationPageProps = {
 };
 
 const premiumFeatures = [
-  "Démarches de soins guidées",
-  "Calculs de doses interactifs",
-  "Fiches, quiz et préparation de stage",
-  "IA OpenAI sécurisée côté serveur",
-  "Export RGPD et données isolées par compte"
+  "Démarches de soins guidées, structurées comme en IFSI",
+  "Calculs de doses avec correction pas à pas",
+  "Fiches de cours, quiz et préparation de stage",
+  "Assistant IA pour t'aider à synthétiser sans faire à ta place",
+  "Données isolées par compte, export RGPD et sécurité renforcée"
+];
+
+const proofPoints = [
+  {
+    title: "Tu gagnes du temps",
+    text: "Moins de pages à trier, plus de priorités claires pour réviser.",
+    icon: Clock3
+  },
+  {
+    title: "Tu progresses vraiment",
+    text: "L'app te guide sans donner 100% des réponses à recopier.",
+    icon: BookOpenCheck
+  },
+  {
+    title: "Tu prépares tes stages",
+    text: "Cardio, médicaments, surveillances, signes d'alerte et objectifs.",
+    icon: WandSparkles
+  }
 ];
 
 export default async function ActivationPage({ searchParams }: ActivationPageProps) {
@@ -46,15 +75,7 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
     <main className="min-h-screen bg-[var(--background)] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col justify-center">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-lg bg-[var(--foreground)] text-xl font-black text-[var(--background)]">
-              N
-            </div>
-            <div>
-              <p className="text-lg font-black">NurseAI</p>
-              <p className="text-sm text-[var(--muted)]">Assistant IFSI premium</p>
-            </div>
-          </div>
+          <AppLogo size="md" />
           <form action={signOutAction}>
             <button className="rounded-lg border border-[var(--border)] bg-[var(--glass)] px-4 py-2 text-sm font-semibold">
               Sortir
@@ -67,16 +88,18 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
             <div className="flex flex-wrap gap-2">
               <Badge>
                 <Sparkles className="mr-1 h-3 w-3" aria-hidden />
-                30 jours gratuits
+                Essai Premium offert 30 jours
               </Badge>
-              <Badge>Puis 7 €/mois</Badge>
+              <Badge>Carte sécurisée par Stripe</Badge>
             </div>
 
             <h1 className="mt-6 max-w-3xl text-4xl font-black tracking-normal text-[var(--foreground)] sm:text-5xl lg:text-6xl">
-              Active ton essai pour lancer NurseAI.
+              Transforme tes cours IFSI en fiches, quiz et plans de stage en quelques minutes.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-              L&apos;application se débloque après activation Stripe avec carte bancaire. Tu profites de toutes les fonctionnalités pendant 1 mois, puis l&apos;abonnement passe à 7 €/mois.
+              Démarre ton mois d&apos;essai pour tester NurseAI en conditions réelles: démarches de soins,
+              calculs de doses, fiches, quiz et préparation de stage. Tu gardes le contrôle: 30 jours offerts,
+              puis 7 €/mois seulement si tu continues.
             </p>
 
             <AuthFeedback error={params?.error} message={params?.message} />
@@ -88,7 +111,7 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-base font-semibold text-white shadow-lg shadow-[color:var(--ring)] transition hover:bg-[var(--primary-dark)]"
                 >
                   <CreditCard className="h-4 w-4" aria-hidden />
-                  Activer l&apos;essai 30 jours
+                  Démarrer mon mois gratuit
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </a>
               ) : (
@@ -100,7 +123,7 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
                 href="/dashboard?preview=1"
                 className="inline-flex h-12 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--glass)] px-5 text-base font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface)]"
               >
-                Voir l&apos;aperçu
+                Voir l&apos;aperçu avant
               </a>
             </div>
 
@@ -111,19 +134,38 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
               </span>
               <span className="inline-flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[var(--success)]" aria-hidden />
-                Annulation possible
+                Résiliation possible
               </span>
+              <span className="inline-flex items-center gap-2">
+                <LockKeyhole className="h-4 w-4 text-[var(--success)]" aria-hidden />
+                Fonctionnalités verrouillées en aperçu
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {proofPoints.map((point) => {
+                const Icon = point.icon;
+
+                return (
+                  <div key={point.title} className="rounded-lg border border-[var(--border)] bg-[var(--glass)] p-4">
+                    <Icon className="h-5 w-5 text-[var(--primary)]" aria-hidden />
+                    <p className="mt-3 text-sm font-black">{point.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{point.text}</p>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
           <Card className="p-5 shadow-2xl shadow-[color:var(--shadow-soft)] sm:p-6">
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+            <div className="mesh-surface rounded-lg border border-[var(--border)] p-4">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
-                Accès Premium
+                Ton accès d&apos;essai
               </p>
-              <p className="mt-2 text-3xl font-black">1 mois complet</p>
+              <p className="mt-2 text-3xl font-black">30 jours pour tout tester</p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                Aucun accès aux fonctionnalités tant que l&apos;essai n&apos;est pas activé. C&apos;est volontaire pour protéger ton modèle économique.
+                L&apos;aperçu permet de visiter l&apos;app. Le mois gratuit débloque les actions, l&apos;IA et
+                la sauvegarde pour travailler vraiment.
               </p>
             </div>
 
@@ -137,7 +179,8 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
             </div>
 
             <div className="mt-5 rounded-lg bg-[var(--background)] p-4 text-sm leading-6 text-[var(--muted)]">
-              Prix configuré: <span className="font-bold text-[var(--foreground)]">7 €/mois</span>. Quota IA:{" "}
+              Aujourd&apos;hui: <span className="font-bold text-[var(--foreground)]">0 € pendant 30 jours</span>. Ensuite:{" "}
+              <span className="font-bold text-[var(--foreground)]">7 €/mois</span>. IA incluse:{" "}
               <span className="font-bold text-[var(--foreground)]">{env.AI_MONTHLY_QUOTA} générations/mois</span>.
             </div>
           </Card>

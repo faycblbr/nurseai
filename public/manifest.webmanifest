@@ -2,7 +2,7 @@
   "name": "NurseAI",
   "short_name": "NurseAI",
   "description": "Assistant IFSI pour démarches de soins, calculs de doses, fiches, quiz et stages.",
-  "start_url": "/dashboard",
+  "start_url": "/activation",
   "display": "standalone",
   "background_color": "#c7f5f6",
   "theme_color": "#0cc4a3",
@@ -14,12 +14,6 @@
       "src": "/brand/nurseai-mark-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/brand/nurseai-mark.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]

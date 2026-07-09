@@ -1,28 +1,29 @@
 import { NextResponse } from "next/server";
-import type { Route } from "next";
-import { env } from "@/lib/env";
+import { getRequestAppUrl } from "@/lib/app-url";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getStripeClient } from "@/server/stripe/client";
 
 export const runtime = "nodejs";
 
-function redirectToSettings(message: string, isError = false) {
+function redirectToSettings(appUrl: string, message: string, isError = false) {
   const key = isError ? "error" : "message";
   return NextResponse.redirect(
-    `${env.NEXT_PUBLIC_APP_URL}/parametres?${key}=${encodeURIComponent(message)}`,
+    `${appUrl}/parametres?${key}=${encodeURIComponent(message)}`,
     { status: 303 }
   );
 }
 
-async function createPortal() {
+async function createPortal(request: Request) {
+  const appUrl = getRequestAppUrl(request);
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion?next=/activation` as Route, { status: 303 });
+    return NextResponse.redirect(`${appUrl}/connexion?next=/activation`, { status: 303 });
   }
 
   const admin = createSupabaseAdminClient();
@@ -34,7 +35,7 @@ async function createPortal() {
 
   if (!subscription?.stripe_customer_id) {
     return NextResponse.redirect(
-      `${env.NEXT_PUBLIC_APP_URL}/activation?error=${encodeURIComponent("Active d'abord l'essai gratuit pour gérer l'abonnement.")}`,
+      `${appUrl}/activation?error=${encodeURIComponent("Active d'abord l'essai gratuit pour gérer l'abonnement.")}`,
       { status: 303 }
     );
   }
@@ -42,19 +43,19 @@ async function createPortal() {
   try {
     const portal = await getStripeClient().billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/parametres`
+      return_url: `${appUrl}/parametres`
     });
 
     return NextResponse.redirect(portal.url, { status: 303 });
   } catch {
-    return redirectToSettings("Le portail Stripe doit être activé dans ton tableau de bord Stripe.", true);
+    return redirectToSettings(appUrl, "Le portail Stripe doit être activé dans ton tableau de bord Stripe.", true);
   }
 }
 
-export async function GET() {
-  return createPortal();
+export async function GET(request: Request) {
+  return createPortal(request);
 }
 
-export async function POST() {
-  return createPortal();
+export async function POST(request: Request) {
+  return createPortal(request);
 }

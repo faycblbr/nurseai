@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { z } from "zod";
-import { env } from "@/lib/env";
+import { getServerActionAppUrl } from "@/lib/app-url";
 import { signInSchema, signUpSchema } from "@/lib/validations/auth";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 
@@ -70,11 +70,12 @@ export async function signUpAction(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
+  const appUrl = await getServerActionAppUrl();
   const { error } = await supabase.auth.signUp({
     email: payload.data.email,
     password: payload.data.password,
     options: {
-      emailRedirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: `${appUrl}/auth/callback`,
       data: {
         first_name: payload.data.firstName,
         last_name: payload.data.lastName,
@@ -102,8 +103,9 @@ export async function resetPasswordAction(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
+  const appUrl = await getServerActionAppUrl();
   const { error } = await supabase.auth.resetPasswordForEmail(payload.data.email, {
-    redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/callback`
+    redirectTo: `${appUrl}/auth/callback`
   });
 
   if (error) {

@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   applicationName: "NurseAI",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
     apple: "/brand/apple-touch-icon.png"
   }
 };
