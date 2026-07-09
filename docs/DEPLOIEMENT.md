@@ -32,6 +32,8 @@ AI_MONTHLY_QUOTA=100
 STRIPE_SECRET_KEY=ta_cle_stripe_quand_le_paiement_est_pret
 STRIPE_PRICE_ID=price_xxxxxxxxx
 STRIPE_WEBHOOK_SECRET=ton_webhook_stripe_quand_pret
+APPLE_BUNDLE_ID=webfabricpro.NurseAI
+APPLE_PREMIUM_PRODUCT_ID=premium_monthly
 ```
 
 La clé `SUPABASE_SERVICE_ROLE_KEY` doit rester serveur uniquement. Elle ne doit jamais être utilisée dans un composant client.
@@ -178,3 +180,72 @@ Pour publier en stores, il faudra ensuite:
 4. Ajouter un compte Apple Developer et Google Play Console.
 5. Fournir confidentialité, support, conditions, captures d'écran et catégorie.
 6. Vérifier que l'IA médicale reste présentée comme aide pédagogique, pas comme dispositif médical.
+
+## 8. App Store: abonnement Apple obligatoire sur iPhone
+
+Sur iPhone, un abonnement numérique doit passer par l'achat intégré Apple, pas par Stripe. Stripe reste utile pour le web, mais l'app iOS devra utiliser StoreKit.
+
+### 8.1. Créer l'app dans App Store Connect
+
+1. Va dans App Store Connect.
+2. Clique sur `My Apps` puis `+`.
+3. Choisis `New App`.
+4. Remplis:
+   - Nom: `NurseAI`
+   - Plateforme: `iOS`
+   - Bundle ID: `webfabricpro.NurseAI`
+   - SKU: `nurseai-ios`
+   - Langue principale: `Français`
+
+Si le Bundle ID n'existe pas encore, crée-le d'abord dans Apple Developer > Certificates, Identifiers & Profiles > Identifiers.
+
+### 8.2. Créer l'abonnement
+
+Dans App Store Connect > NurseAI > Subscriptions:
+
+1. Crée un groupe d'abonnements: `NurseAI Premium`.
+2. Crée un abonnement auto-renouvelable:
+   - Product ID: `premium_monthly`
+   - Nom: `NurseAI Premium mensuel`
+   - Prix: `7,00 € / mois`
+3. Ajoute une offre d'introduction:
+   - Type: `Free Trial`
+   - Durée: `1 month`
+
+Le `Product ID` doit rester exactement `premium_monthly`, sauf si tu changes aussi `APPLE_PREMIUM_PRODUCT_ID` dans Vercel et dans Xcode.
+
+### 8.3. Synchroniser l'accès Premium
+
+Le principe cible:
+
+1. L'utilisateur crée son compte NurseAI.
+2. Sur iPhone, l'app déclenche l'achat Apple avec StoreKit.
+3. Apple valide l'essai gratuit d'un mois.
+4. Le serveur NurseAI vérifie la transaction Apple.
+5. Supabase met l'utilisateur en Premium.
+
+Ne jamais débloquer le Premium uniquement depuis l'iPhone sans vérification serveur. Sinon quelqu'un pourrait modifier l'app ou simuler un achat.
+
+### 8.4. Variables Apple serveur
+
+Quand l'app et l'abonnement existent dans App Store Connect, ajoute ensuite dans Vercel:
+
+```text
+APPLE_BUNDLE_ID=webfabricpro.NurseAI
+APPLE_PREMIUM_PRODUCT_ID=premium_monthly
+APPLE_APP_STORE_CONNECT_ISSUER_ID=...
+APPLE_APP_STORE_CONNECT_KEY_ID=...
+APPLE_APP_STORE_CONNECT_PRIVATE_KEY=...
+```
+
+Les trois dernières valeurs viennent d'App Store Connect > Users and Access > Integrations > App Store Connect API.
+
+### 8.5. Migration Supabase pour Apple
+
+Avant d'activer StoreKit, lance dans Supabase SQL Editor le fichier:
+
+```text
+supabase/migrations/003_multiplatform_billing.sql
+```
+
+Cette migration ajoute les colonnes nécessaires pour suivre un abonnement Apple sans casser Stripe.

@@ -54,6 +54,12 @@ export type Database = {
           user_id: string;
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
+          billing_provider?: "stripe" | "apple" | "google" | "manual";
+          apple_original_transaction_id?: string | null;
+          apple_product_id?: string | null;
+          apple_environment?: string | null;
+          apple_signed_transaction_info?: string | null;
+          entitlement_updated_at?: string | null;
           status: "trialing" | "active" | "past_due" | "canceled" | "unpaid";
           current_period_end: string | null;
           ai_monthly_quota: number;
@@ -66,6 +72,12 @@ export type Database = {
           user_id: string;
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
+          billing_provider?: "stripe" | "apple" | "google" | "manual";
+          apple_original_transaction_id?: string | null;
+          apple_product_id?: string | null;
+          apple_environment?: string | null;
+          apple_signed_transaction_info?: string | null;
+          entitlement_updated_at?: string | null;
           status?: "trialing" | "active" | "past_due" | "canceled" | "unpaid";
           current_period_end?: string | null;
           ai_monthly_quota?: number;

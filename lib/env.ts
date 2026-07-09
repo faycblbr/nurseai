@@ -10,7 +10,12 @@ const envSchema = z.object({
   AI_MONTHLY_QUOTA: z.coerce.number().int().positive().default(100),
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
-  STRIPE_PRICE_ID: z.string().optional()
+  STRIPE_PRICE_ID: z.string().optional(),
+  APPLE_BUNDLE_ID: z.string().default("webfabricpro.NurseAI"),
+  APPLE_PREMIUM_PRODUCT_ID: z.string().default("premium_monthly"),
+  APPLE_APP_STORE_CONNECT_ISSUER_ID: z.string().optional(),
+  APPLE_APP_STORE_CONNECT_KEY_ID: z.string().optional(),
+  APPLE_APP_STORE_CONNECT_PRIVATE_KEY: z.string().optional()
 });
 
 export const env = envSchema.parse(process.env);

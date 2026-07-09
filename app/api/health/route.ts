@@ -14,6 +14,13 @@ export async function GET() {
       stripeConfigured: Boolean(env.STRIPE_SECRET_KEY),
       stripePriceConfigured: Boolean(env.STRIPE_PRICE_ID),
       stripeWebhookConfigured: Boolean(env.STRIPE_WEBHOOK_SECRET),
+      appleBundleId: env.APPLE_BUNDLE_ID,
+      appleProductId: env.APPLE_PREMIUM_PRODUCT_ID,
+      appleServerApiConfigured: Boolean(
+        env.APPLE_APP_STORE_CONNECT_ISSUER_ID &&
+          env.APPLE_APP_STORE_CONNECT_KEY_ID &&
+          env.APPLE_APP_STORE_CONNECT_PRIVATE_KEY
+      ),
       aiMonthlyQuota: env.AI_MONTHLY_QUOTA
     }
   });

@@ -5,6 +5,9 @@ import { createSupabaseAdminClient } from "@/server/supabase/admin";
 
 type SubscriptionRow = Database["public"]["Tables"]["subscriptions"]["Row"];
 type SubscriptionStatus = SubscriptionRow["status"];
+type MultiplatformSubscription = SubscriptionRow & {
+  apple_original_transaction_id?: string | null;
+};
 
 type AiAccess =
   | { allowed: true; subscription: SubscriptionRow; remaining: number }
@@ -20,8 +23,12 @@ export function isBillingConfigured() {
   return Boolean(env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID && env.STRIPE_WEBHOOK_SECRET);
 }
 
-export function isSubscriptionUsable(subscription?: Pick<SubscriptionRow, "status" | "stripe_subscription_id" | "current_period_end"> | null) {
-  if (!subscription?.stripe_subscription_id || !ACTIVE_STATUSES.has(subscription.status)) {
+function hasPaidEntitlement(subscription?: Pick<MultiplatformSubscription, "stripe_subscription_id" | "apple_original_transaction_id"> | null) {
+  return Boolean(subscription?.stripe_subscription_id || subscription?.apple_original_transaction_id);
+}
+
+export function isSubscriptionUsable(subscription?: Pick<MultiplatformSubscription, "status" | "stripe_subscription_id" | "apple_original_transaction_id" | "current_period_end"> | null) {
+  if (!subscription || !hasPaidEntitlement(subscription) || !ACTIVE_STATUSES.has(subscription.status)) {
     return false;
   }
 
@@ -144,7 +151,7 @@ export async function getBillingAccess(userId: string): Promise<BillingAccess> {
     };
   }
 
-  if (!subscription.stripe_subscription_id || !ACTIVE_STATUSES.has(subscription.status)) {
+  if (!hasPaidEntitlement(subscription) || !ACTIVE_STATUSES.has(subscription.status)) {
     return {
       allowed: false,
       subscription,
@@ -198,7 +205,7 @@ export async function getAiAccess(userId: string): Promise<AiAccess> {
     };
   }
 
-  if (!subscription?.stripe_subscription_id && isBillingConfigured()) {
+  if (subscription && !hasPaidEntitlement(subscription) && isBillingConfigured()) {
     return {
       allowed: false,
       status: 402,
