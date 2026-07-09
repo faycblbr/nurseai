@@ -10,14 +10,21 @@ export async function generateMarkdown({ promptKey, userContent }: GenerateMarkd
   const client = getOpenAIClient();
   const prompt = aiPrompts[promptKey];
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
+  const response = await client.responses.create({
+    model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
     temperature: 0.3,
-    messages: [
-      { role: "system", content: `${prompt.system}\nVersion prompt: ${prompt.version}` },
-      { role: "user", content: userContent }
-    ]
+    instructions: `${prompt.system}
+
+Règles NurseAI:
+- Réponds en français.
+- Reste pédagogique: guide l'étudiant sans remplacer son raisonnement.
+- Ne pose jamais de diagnostic médical certain.
+- Si des données patient identifiantes apparaissent, rappelle de les anonymiser.
+- Structure la réponse en Markdown clair.
+
+Version prompt: ${prompt.version}`,
+    input: userContent
   });
 
-  return response.choices[0]?.message.content ?? "";
+  return response.output_text ?? "";
 }

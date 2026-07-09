@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type InsertBuilder = {
@@ -22,6 +23,7 @@ export function RevisionGenerator() {
   const [selectedFile, setSelectedFile] = useState("");
   const [fileMessage, setFileMessage] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [generatedMarkdown, setGeneratedMarkdown] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const keywords = useMemo(() => {
@@ -66,6 +68,29 @@ export function RevisionGenerator() {
     const summary = `Résumé guidé: ce cours semble tourner autour de ${
       keywords.join(", ") || "notions clés à identifier"
     }. Commence par isoler les définitions, risques, surveillances IDE et points à rechercher toi-même.`;
+    let finalSummary = summary;
+    let aiNotice = "";
+
+    setGeneratedMarkdown("Génération en cours...");
+
+    try {
+      const aiResult = await requestAIGeneration(
+        "revision-card",
+        `Source: ${selectedFile || "texte collé"}
+
+Cours:
+${course}`
+      );
+      finalSummary = aiResult.markdown;
+      aiNotice =
+        aiResult.remaining === null
+          ? ""
+          : `IA utilisée. Il te reste ${aiResult.remaining} génération(s) ce mois-ci.`;
+    } catch (error) {
+      aiNotice = error instanceof Error ? error.message : "IA indisponible, fiche guidée générée localement.";
+    }
+
+    setGeneratedMarkdown(finalSummary);
 
     try {
       const supabase = createSupabaseBrowserClient();
@@ -82,13 +107,17 @@ export function RevisionGenerator() {
       const { error } = await db.from("revision_cards").insert({
         user_id: user.id,
         title: selectedFile || course.trim().slice(0, 72) || "Fiche de cours",
-        summary_markdown: summary,
+        summary_markdown: finalSummary,
         flashcards: keywords.map((keyword) => ({ recto: keyword, verso: "À compléter avec ton cours" })),
         quiz: keywords.slice(0, 3).map((keyword) => ({ question: `Explique ${keyword} avec tes mots.`, answer: "À vérifier dans le cours" })),
         mindmap: { center: selectedFile || "Cours importé", branches: keywords }
       });
 
-      setSaveMessage(error ? "Fiche générée, mais sauvegarde Supabase impossible." : "Fiche sauvegardée dans ton espace.");
+      setSaveMessage(
+        error
+          ? "Fiche générée, mais sauvegarde Supabase impossible."
+          : [aiNotice, "Fiche sauvegardée dans ton espace."].filter(Boolean).join(" ")
+      );
     } catch {
       setSaveMessage("Fiche générée. Sauvegarde indisponible sur cet environnement.");
     }
@@ -162,16 +191,17 @@ export function RevisionGenerator() {
           <div className="mt-4 space-y-4">
             <section className="rounded-lg bg-[var(--surface)] p-4">
               <Badge>Résumé guidé</Badge>
-              <p className="mt-3 text-sm leading-6">
-                Ce cours semble tourner autour de: {keywords.join(", ") || "notions clés à identifier"}. Commence par isoler les définitions, les risques et les surveillances IDE.
-              </p>
+              <pre className="mt-3 whitespace-pre-wrap text-sm leading-6">
+                {generatedMarkdown ||
+                  `Ce cours semble tourner autour de: ${keywords.join(", ") || "notions clés à identifier"}. Commence par isoler les définitions, les risques et les surveillances IDE.`}
+              </pre>
             </section>
             <section className="grid gap-3 sm:grid-cols-2">
               {["3 idées essentielles", "Questions à te poser", "À chercher toi-même", "Mini quiz"].map((item) => (
                 <div key={item} className="rounded-lg border border-[var(--border)] bg-[var(--glass)] p-4">
                   <p className="font-bold">{item}</p>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Contenu prêt à être enrichi par l&apos;IA OpenAI dès que la clé API est ajoutée.
+                    À compléter avec ton cours puis à vérifier avec ton formateur ou ton tuteur.
                   </p>
                 </div>
               ))}

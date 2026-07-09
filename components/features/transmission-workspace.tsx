@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type InsertBuilder = {
@@ -51,7 +52,31 @@ ${actionsMarkdown}
 
 ${resultsMarkdown}`;
 
-    setOutput(generatedMarkdown);
+    setOutput("Préparation en cours...");
+
+    let finalMarkdown = generatedMarkdown;
+    let aiNotice = "";
+
+    try {
+      const aiResult = await requestAIGeneration(
+        "targeted-transmission",
+        `Cible pressentie: ${target || "à déterminer"}
+Service/contexte: ${service || "non précisé"}
+Urgence: ${urgency || "à préciser"}
+
+Situation anonymisée:
+${situation}`
+      );
+      finalMarkdown = aiResult.markdown;
+      aiNotice =
+        aiResult.remaining === null
+          ? ""
+          : `IA utilisée. Il te reste ${aiResult.remaining} génération(s) ce mois-ci.`;
+    } catch (error) {
+      aiNotice = error instanceof Error ? error.message : "IA indisponible, transmission guidée générée localement.";
+    }
+
+    setOutput(finalMarkdown);
 
     try {
       const supabase = createSupabaseBrowserClient();
@@ -70,13 +95,17 @@ ${resultsMarkdown}`;
         title: target || "Transmission ciblée",
         situation,
         target: target || null,
-        data_markdown: dataMarkdown,
+        data_markdown: finalMarkdown.includes("**Données") ? dataMarkdown : finalMarkdown,
         actions_markdown: actionsMarkdown,
         results_markdown: resultsMarkdown,
         status: "generated"
       });
 
-      setSaveMessage(error ? "Transmission générée, mais sauvegarde Supabase impossible." : "Transmission sauvegardée.");
+      setSaveMessage(
+        error
+          ? "Transmission générée, mais sauvegarde Supabase impossible."
+          : [aiNotice, "Transmission sauvegardée."].filter(Boolean).join(" ")
+      );
     } catch {
       setSaveMessage("Transmission générée. Sauvegarde indisponible sur cet environnement.");
     }

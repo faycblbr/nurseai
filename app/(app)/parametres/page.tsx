@@ -1,4 +1,4 @@
-import { Download, ShieldCheck, Trash2 } from "lucide-react";
+import { CreditCard, Download, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { AuthFeedback } from "@/components/auth/auth-feedback";
 import { PageHeader } from "@/components/app/page-header";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { Json } from "@/lib/supabase/database.types";
+import { env } from "@/lib/env";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import {
   requestAccountDeletionAction,
@@ -38,6 +39,8 @@ type UserSettings = {
 
 type UserSubscription = {
   status: "trialing" | "active" | "past_due" | "canceled" | "unpaid";
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
   ai_monthly_quota: number;
   ai_monthly_usage: number;
   current_period_end: string | null;
@@ -104,7 +107,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
     const subscriptionResult = await supabase
       .from("subscriptions")
-      .select("status, ai_monthly_quota, ai_monthly_usage, current_period_end")
+      .select("status, stripe_customer_id, stripe_subscription_id, ai_monthly_quota, ai_monthly_usage, current_period_end")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -116,7 +119,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const privacy = settings?.privacy;
   const aiUsage = subscription
     ? `${subscription.ai_monthly_usage}/${subscription.ai_monthly_quota}`
-    : "0/50";
+    : `0/${env.AI_MONTHLY_QUOTA}`;
+  const stripeReady = Boolean(env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID && env.STRIPE_WEBHOOK_SECRET);
+  const hasStripeSubscription = Boolean(subscription?.stripe_subscription_id);
+  const canManageSubscription = Boolean(subscription?.stripe_customer_id);
+  const subscriptionBadge = hasStripeSubscription ? subscription?.status ?? "trialing" : "essai à activer";
 
   return (
     <>
@@ -187,10 +194,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <div>
               <h2 className="text-lg font-black">Abonnement et quotas</h2>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                Prévu pour Stripe et les limites IA avant une mise en production large.
+                30 jours gratuits, puis 7 €/mois. Paiement sécurisé par Stripe, clés et cartes jamais stockées dans NurseAI.
               </p>
             </div>
-            <Badge>{subscription?.status ?? "trialing"}</Badge>
+            <Badge>{subscriptionBadge}</Badge>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -203,13 +210,50 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               <p className="mt-2 text-sm font-bold">
                 {subscription?.current_period_end
                   ? new Intl.DateTimeFormat("fr-FR").format(new Date(subscription.current_period_end))
-                  : "Early access"}
+                  : hasStripeSubscription
+                    ? "En attente Stripe"
+                    : "Non activée"}
               </p>
             </div>
           </div>
 
-          <div className="mt-5 rounded-lg border border-dashed border-[var(--border)] bg-[var(--glass)] p-4 text-sm leading-6 text-[var(--muted)]">
-            Le paiement n&apos;est pas encore activé. Quand Stripe sera branché, cette zone affichera changement de plan, facture et annulation.
+          <div className="mt-5 rounded-lg border border-[var(--border)] bg-[var(--glass)] p-4">
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--surface)] text-[var(--primary)]">
+                {hasStripeSubscription ? <CreditCard className="h-5 w-5" aria-hidden /> : <Sparkles className="h-5 w-5" aria-hidden />}
+              </div>
+              <div>
+                <p className="text-sm font-black">
+                  {hasStripeSubscription ? "Abonnement actif côté Stripe" : "Active ton essai gratuit"}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                  {hasStripeSubscription
+                    ? "Tu peux modifier ta carte, télécharger tes factures ou annuler depuis le portail sécurisé Stripe."
+                    : "L'essai débloque l'IA réelle pendant 30 jours. Ensuite, Stripe facture 7 €/mois si tu gardes l'abonnement."}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <form action="/api/stripe/checkout" method="post">
+                <Button className="w-full" disabled={!stripeReady || hasStripeSubscription}>
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Activer l&apos;essai 30 jours
+                </Button>
+              </form>
+              <form action="/api/stripe/portal" method="post">
+                <Button className="w-full" variant="secondary" disabled={!stripeReady || !canManageSubscription}>
+                  <CreditCard className="h-4 w-4" aria-hidden />
+                  Gérer l&apos;abonnement
+                </Button>
+              </form>
+            </div>
+
+            {!stripeReady ? (
+              <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+                Stripe n&apos;est pas complet dans Vercel: ajoute STRIPE_SECRET_KEY, STRIPE_PRICE_ID et STRIPE_WEBHOOK_SECRET.
+              </p>
+            ) : null}
           </div>
         </Card>
       </div>

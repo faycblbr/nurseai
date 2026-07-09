@@ -27,11 +27,75 @@ NEXT_PUBLIC_SUPABASE_URL=https://qthwnzzyjqdcgdphjjvn.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=ta_cle_publique_supabase
 SUPABASE_SERVICE_ROLE_KEY=ta_cle_secrete_supabase
 OPENAI_API_KEY=ta_cle_openai_quand_l_ia_est_prete
+OPENAI_MODEL=gpt-4.1-mini
+AI_MONTHLY_QUOTA=100
 STRIPE_SECRET_KEY=ta_cle_stripe_quand_le_paiement_est_pret
+STRIPE_PRICE_ID=price_xxxxxxxxx
 STRIPE_WEBHOOK_SECRET=ton_webhook_stripe_quand_pret
 ```
 
 La clé `SUPABASE_SERVICE_ROLE_KEY` doit rester serveur uniquement. Elle ne doit jamais être utilisée dans un composant client.
+
+Les clés `OPENAI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID` et `STRIPE_WEBHOOK_SECRET` doivent aussi rester dans Vercel. Ne les mets jamais dans GitHub, dans le code, dans une page, ou dans un composant React client.
+
+## 3.2. Activer Stripe: essai 30 jours puis 7 €/mois
+
+1. Va sur Stripe Dashboard.
+2. Crée un produit: `NurseAI Premium`.
+3. Ajoute un prix récurrent:
+   - Montant: `7`
+   - Devise: `EUR`
+   - Période: `mensuelle`
+4. Copie l'identifiant du prix. Il commence par `price_`.
+5. Dans Vercel > Environment Variables, ajoute:
+
+```text
+STRIPE_PRICE_ID=price_xxxxxxxxx
+```
+
+6. Toujours dans Stripe, crée un webhook:
+
+```text
+Endpoint URL:
+https://ton-url-vercel.app/api/stripe/webhook
+```
+
+7. Sélectionne ces événements:
+
+```text
+checkout.session.completed
+customer.subscription.created
+customer.subscription.updated
+customer.subscription.deleted
+invoice.payment_failed
+```
+
+8. Copie le secret du webhook. Il commence par `whsec_`.
+9. Dans Vercel, ajoute:
+
+```text
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxx
+```
+
+10. Redéploie Vercel.
+
+L'essai gratuit de 30 jours est créé par le code au moment du passage dans Stripe Checkout. Le paiement démarre ensuite automatiquement à 7 €/mois si l'utilisateur ne résilie pas.
+
+## 3.3. Activer OpenAI
+
+1. Va sur la plateforme OpenAI.
+2. Crée une clé API serveur.
+3. Dans Vercel, ajoute:
+
+```text
+OPENAI_API_KEY=sk-xxxxxxxxx
+OPENAI_MODEL=gpt-4.1-mini
+AI_MONTHLY_QUOTA=100
+```
+
+4. Redéploie Vercel.
+
+L'application n'appelle jamais OpenAI depuis le navigateur. Les générations passent par `/api/ai/generate`, qui vérifie la connexion, l'abonnement Stripe et le quota.
 
 ## 3.1. Région Europe
 

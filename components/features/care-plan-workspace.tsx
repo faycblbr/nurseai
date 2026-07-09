@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { coreCarePlanSections } from "@/config/navigation";
+import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type InsertBuilder = {
@@ -124,10 +125,38 @@ NurseAI ne remplace pas ton raisonnement. Complète les 14 besoins, puis compare
 ### Situation analysée
 ${context}`;
 
-    setOutput(generatedMarkdown);
+    setOutput("Génération en cours...");
     setSaveState("saving");
 
     try {
+      let finalMarkdown = generatedMarkdown;
+      let aiNotice = "";
+
+      try {
+        const aiResult = await requestAIGeneration(
+          "care-plan",
+          `Situation patient anonymisée:
+${context}
+
+Constantes:
+${showConstants ? constantsSummary : "Non renseignées"}
+
+Traitement:
+${showTreatment ? treatmentSummary : "Non renseigné"}
+
+Objectif: produire une démarche de soins guidée, exigeante et adaptée IFSI.`
+        );
+        finalMarkdown = aiResult.markdown;
+        aiNotice =
+          aiResult.remaining === null
+            ? ""
+            : `IA utilisée. Il te reste ${aiResult.remaining} génération(s) ce mois-ci.`;
+      } catch (error) {
+        aiNotice = error instanceof Error ? error.message : "IA indisponible, brouillon guidé généré localement.";
+      }
+
+      setOutput(finalMarkdown);
+
       const supabase = createSupabaseBrowserClient();
       const {
         data: { user }
@@ -145,7 +174,7 @@ ${context}`;
         user_id: user.id,
         title,
         patient_context: context,
-        content_markdown: generatedMarkdown,
+        content_markdown: finalMarkdown,
         status: "generated"
       });
 
@@ -156,7 +185,7 @@ ${context}`;
       }
 
       setSaveState("saved");
-      setSaveMessage("Démarche sauvegardée dans ton espace.");
+      setSaveMessage([aiNotice, "Démarche sauvegardée dans ton espace."].filter(Boolean).join(" "));
     } catch {
       setSaveState("error");
       setSaveMessage("La démarche est générée, mais la sauvegarde n'est pas disponible sur cet environnement.");

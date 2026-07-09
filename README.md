@@ -9,7 +9,7 @@ Assistant IA premium pour étudiants infirmiers francophones.
 - TailwindCSS v3
 - Supabase Auth, PostgreSQL, Storage, RLS
 - OpenAI API via une couche serveur centralisée
-- Stripe prévu pour les abonnements et quotas IA
+- Stripe Checkout: essai 30 jours puis abonnement 7 €/mois
 
 ## Démarrage
 
@@ -47,6 +47,8 @@ supabase/migrations/ Schéma SQL et RLS
 
 - Aucune clé sensible côté client.
 - RLS activée dès la première migration.
+- Paiement et IA appelés uniquement depuis des routes serveur.
+- Webhook Stripe signé avant mise à jour de l'abonnement Supabase.
 - Prompts IA versionnés.
 - Sorties IA en Markdown pour édition et export.
 - UI mobile-first, rapide, dense et quotidienne.
