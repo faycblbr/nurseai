@@ -13,13 +13,19 @@ export const metadata: Metadata = {
   },
   description:
     "Assistant IA premium pour étudiants infirmiers: démarches de soins, calculs de doses, fiches, quiz et stages.",
-  applicationName: "NurseAI"
+  applicationName: "NurseAI",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/brand/apple-touch-icon.png"
+  }
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0F766E"
+  themeColor: "#0CC4A3"
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -7,6 +7,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { coreCarePlanSections } from "@/config/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+type InsertBuilder = {
+  insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+};
+
+type GenericInsertClient = {
+  from: (table: string) => InsertBuilder;
+};
 
 const constantFields = [
   { key: "temperature", label: "Température", placeholder: "Ex: 37,8 °C" },
@@ -59,6 +68,8 @@ export function CarePlanWorkspace() {
   const [output, setOutput] = useState("");
   const [showConstants, setShowConstants] = useState(false);
   const [showTreatment, setShowTreatment] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveMessage, setSaveMessage] = useState("");
   const [constants, setConstants] = useState<Record<string, string>>({});
   const [treatment, setTreatment] = useState({
     name: "",
@@ -78,13 +89,16 @@ Indication: ${treatment.indication || "à expliquer avec tes mots"}
 Surveillance IDE: ${treatment.monitoring || "à déduire"}
 Effet indésirable important: ${treatment.adverseEffect || "à vérifier"}`;
 
-  function generate() {
+  async function generate() {
+    setSaveState("idle");
+    setSaveMessage("");
+
     if (context.trim().length < 20) {
       setOutput("Ajoute plus de contexte patient pour générer une démarche exploitable.");
       return;
     }
 
-    setOutput(`## Démarche de soins - brouillon pédagogique
+    const generatedMarkdown = `## Démarche de soins - brouillon pédagogique
 
 ### 1. Ce que tu dois d'abord repérer
 - Motif d'entrée
@@ -108,7 +122,45 @@ ${showTreatment ? treatmentSummary : "Aucun traitement ajouté. Ajoute au moins 
 NurseAI ne remplace pas ton raisonnement. Complète les 14 besoins, puis compare avec les propositions guidées.
 
 ### Situation analysée
-${context}`);
+${context}`;
+
+    setOutput(generatedMarkdown);
+    setSaveState("saving");
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setSaveState("error");
+        setSaveMessage("Connecte-toi pour sauvegarder cette démarche dans ton espace.");
+        return;
+      }
+
+      const title = context.trim().slice(0, 72) || "Démarche de soins";
+      const db = supabase as unknown as GenericInsertClient;
+      const { error } = await db.from("care_plans").insert({
+        user_id: user.id,
+        title,
+        patient_context: context,
+        content_markdown: generatedMarkdown,
+        status: "generated"
+      });
+
+      if (error) {
+        setSaveState("error");
+        setSaveMessage("La démarche est générée, mais la sauvegarde Supabase a échoué. Vérifie les variables et les règles RLS.");
+        return;
+      }
+
+      setSaveState("saved");
+      setSaveMessage("Démarche sauvegardée dans ton espace.");
+    } catch {
+      setSaveState("error");
+      setSaveMessage("La démarche est générée, mais la sauvegarde n'est pas disponible sur cet environnement.");
+    }
   }
 
   return (
@@ -225,6 +277,21 @@ ${context}`);
             <WandSparkles className="h-4 w-4" aria-hidden />
             Générer le brouillon
           </Button>
+          {saveMessage ? (
+            <p
+              className={`mt-3 rounded-lg px-3 py-2 text-sm font-semibold ${
+                saveState === "saved"
+                  ? "bg-[var(--mint)] text-[var(--mint-strong)]"
+                  : "bg-[var(--peach)] text-[var(--peach-strong)]"
+              }`}
+            >
+              {saveMessage}
+            </p>
+          ) : saveState === "saving" ? (
+            <p className="mt-3 rounded-lg bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--muted)]">
+              Sauvegarde en cours...
+            </p>
+          ) : null}
         </form>
       </Card>
       <Card className="p-5">

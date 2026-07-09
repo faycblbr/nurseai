@@ -3,61 +3,69 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f3ec;
-  --foreground: #171713;
-  --card: #fffdf8;
-  --muted: #777166;
-  --border: #e4ddd1;
-  --primary: #0f766e;
-  --primary-dark: #0a5f59;
-  --accent: #f26d4f;
-  --accent-strong: #d94f34;
-  --success: #2f9b62;
-  --warning: #b7791f;
-  --danger: #d83f31;
-  --surface: #ece7dc;
-  --surface-strong: #ded5c6;
-  --ink-soft: #34312a;
-  --mint: #e3f3e7;
-  --mint-strong: #2f8a55;
-  --peach: #ffeadf;
-  --peach-strong: #d95f35;
-  --violet: #eee7ff;
-  --violet-strong: #6d5aa8;
-  --gold: #f4c95d;
-  --glass: rgba(255, 253, 248, 0.74);
-  --glass-strong: rgba(255, 253, 248, 0.9);
-  --shadow-soft: rgba(49, 43, 32, 0.1);
-  --ring: rgba(15, 118, 110, 0.16);
+  --background: #c7f5f6;
+  --foreground: #101923;
+  --card: #f7ffff;
+  --muted: #526a73;
+  --border: #9bdddf;
+  --primary: #0cc4a3;
+  --primary-dark: #07997f;
+  --accent: #8582e6;
+  --accent-strong: #6f6bd4;
+  --success: #0ca678;
+  --warning: #e5a72f;
+  --danger: #e05656;
+  --surface: #e1f8f8;
+  --surface-strong: #b6eff0;
+  --ink-soft: #23313b;
+  --mint: #d9faf1;
+  --mint-strong: #07997f;
+  --peach: #ffe7e1;
+  --peach-strong: #cb5a4d;
+  --violet: #ecebff;
+  --violet-strong: #7772df;
+  --gold: #f0c86a;
+  --logo-bg: #c3f2f5;
+  --logo-line: #101923;
+  --logo-teal: #0cc4a3;
+  --logo-violet: #8582e6;
+  --glass: rgba(247, 255, 255, 0.72);
+  --glass-strong: rgba(247, 255, 255, 0.92);
+  --shadow-soft: rgba(30, 84, 91, 0.13);
+  --ring: rgba(12, 196, 163, 0.2);
 }
 
 .dark {
-  --background: #0d0d0b;
-  --foreground: #f7f1e7;
-  --card: #171713;
-  --muted: #aaa197;
-  --border: #343027;
-  --primary: #5ed0bd;
-  --primary-dark: #35a997;
-  --accent: #ff8a66;
-  --accent-strong: #ff7048;
-  --success: #77d69b;
-  --warning: #f4c95d;
-  --danger: #ff7568;
-  --surface: #211f19;
-  --surface-strong: #2c281f;
-  --ink-soft: #f0e6d8;
-  --mint: #173229;
-  --mint-strong: #87e0ad;
-  --peach: #3a2119;
-  --peach-strong: #ff9b79;
-  --violet: #251f36;
-  --violet-strong: #c6b4ff;
-  --gold: #f4c95d;
-  --glass: rgba(23, 23, 19, 0.76);
-  --glass-strong: rgba(23, 23, 19, 0.92);
+  --background: #071a1e;
+  --foreground: #effdfe;
+  --card: #0d252b;
+  --muted: #9bc2c8;
+  --border: #23545c;
+  --primary: #37dfbf;
+  --primary-dark: #14b99c;
+  --accent: #a39fff;
+  --accent-strong: #8d88ff;
+  --success: #57e1aa;
+  --warning: #f0c86a;
+  --danger: #ff7b7b;
+  --surface: #12333a;
+  --surface-strong: #174852;
+  --ink-soft: #d9fbfb;
+  --mint: #0f4039;
+  --mint-strong: #68efc7;
+  --peach: #44211f;
+  --peach-strong: #ff9a8d;
+  --violet: #262451;
+  --violet-strong: #c2bfff;
+  --gold: #f0c86a;
+  --logo-bg: #113b43;
+  --logo-line: #effdfe;
+  --logo-teal: #37dfbf;
+  --logo-violet: #a39fff;
+  --glass: rgba(13, 37, 43, 0.76);
+  --glass-strong: rgba(13, 37, 43, 0.92);
   --shadow-soft: rgba(0, 0, 0, 0.34);
-  --ring: rgba(94, 208, 189, 0.2);
+  --ring: rgba(55, 223, 191, 0.22);
 }
 
 * {
@@ -77,12 +85,17 @@ body {
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   background:
-    radial-gradient(circle at 20% 0%, rgba(242, 109, 79, 0.12), transparent 32rem),
-    radial-gradient(circle at 88% 12%, rgba(15, 118, 110, 0.14), transparent 30rem),
-    linear-gradient(180deg, #fffdf8 0%, var(--background) 48%, #efe8dc 100%);
+    radial-gradient(circle at 18% 0%, rgba(133, 130, 230, 0.24), transparent 31rem),
+    radial-gradient(circle at 88% 12%, rgba(12, 196, 163, 0.2), transparent 30rem),
+    linear-gradient(180deg, #e9feff 0%, var(--background) 48%, #d9f8f7 100%);
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 button,
@@ -109,24 +122,24 @@ select {
 
 .mesh-surface {
   background:
-    radial-gradient(circle at 10% 15%, rgba(244, 201, 93, 0.22), transparent 16rem),
-    radial-gradient(circle at 92% 4%, rgba(94, 208, 189, 0.24), transparent 16rem),
-    linear-gradient(135deg, rgba(255, 253, 248, 0.88), rgba(227, 243, 231, 0.72) 46%, rgba(255, 234, 223, 0.82)),
+    radial-gradient(circle at 12% 15%, rgba(133, 130, 230, 0.23), transparent 16rem),
+    radial-gradient(circle at 92% 4%, rgba(12, 196, 163, 0.26), transparent 16rem),
+    linear-gradient(135deg, rgba(247, 255, 255, 0.9), rgba(218, 250, 241, 0.76) 46%, rgba(236, 235, 255, 0.82)),
     var(--card);
 }
 
 .dark body {
   background:
-    radial-gradient(circle at 22% 0%, rgba(255, 138, 102, 0.13), transparent 30rem),
-    radial-gradient(circle at 86% 10%, rgba(94, 208, 189, 0.16), transparent 32rem),
-    linear-gradient(180deg, #11110e 0%, var(--background) 48%, #080806 100%);
+    radial-gradient(circle at 22% 0%, rgba(163, 159, 255, 0.16), transparent 30rem),
+    radial-gradient(circle at 86% 10%, rgba(55, 223, 191, 0.16), transparent 32rem),
+    linear-gradient(180deg, #0b2328 0%, var(--background) 48%, #041014 100%);
 }
 
 .dark .mesh-surface {
   background:
-    radial-gradient(circle at 10% 15%, rgba(244, 201, 93, 0.14), transparent 16rem),
-    radial-gradient(circle at 92% 4%, rgba(94, 208, 189, 0.18), transparent 16rem),
-    linear-gradient(135deg, rgba(26, 25, 21, 0.92), rgba(25, 48, 41, 0.7) 48%, rgba(58, 33, 25, 0.84)),
+    radial-gradient(circle at 10% 15%, rgba(163, 159, 255, 0.16), transparent 16rem),
+    radial-gradient(circle at 92% 4%, rgba(55, 223, 191, 0.18), transparent 16rem),
+    linear-gradient(135deg, rgba(13, 37, 43, 0.94), rgba(14, 67, 62, 0.72) 48%, rgba(38, 36, 81, 0.8)),
     var(--card);
 }
 

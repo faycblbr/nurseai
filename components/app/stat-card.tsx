@@ -6,17 +6,17 @@ type StatCardProps = {
   value: string;
   detail: string;
   icon: LucideIcon;
-  tone?: "blue" | "green" | "peach" | "violet";
+  tone?: "aqua" | "green" | "peach" | "violet";
 };
 
 const tones = {
-  blue: "bg-[var(--surface)] text-[var(--primary)]",
+  aqua: "bg-[var(--surface)] text-[var(--primary)]",
   green: "bg-[var(--mint)] text-[var(--mint-strong)]",
   peach: "bg-[var(--peach)] text-[var(--peach-strong)]",
   violet: "bg-[var(--violet)] text-[var(--violet-strong)]"
 };
 
-export function StatCard({ label, value, detail, icon: Icon, tone = "blue" }: StatCardProps) {
+export function StatCard({ label, value, detail, icon: Icon, tone = "aqua" }: StatCardProps) {
   return (
     <Card className="p-5 transition hover:-translate-y-0.5 hover:shadow-xl">
       <div className="flex items-start justify-between gap-3">

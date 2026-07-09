@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+type InsertBuilder = {
+  insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+};
+
+type GenericInsertClient = {
+  from: (table: string) => InsertBuilder;
+};
 
 export function TransmissionWorkspace() {
   const [target, setTarget] = useState("");
@@ -13,28 +22,64 @@ export function TransmissionWorkspace() {
   const [urgency, setUrgency] = useState("");
   const [situation, setSituation] = useState("");
   const [output, setOutput] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
 
-  function prepare() {
+  async function prepare() {
+    setSaveMessage("");
+
     if (!situation.trim()) {
       setOutput("Décris la situation avant de préparer une transmission.");
       return;
     }
 
-    setOutput(`## Transmission ciblée DAR
+    const dataMarkdown = `**Données :**
+${situation}`;
+    const actionsMarkdown = `**Actions :**
+- Actions IDE réalisées à compléter
+- Prévenir IDE/tuteur si signe d'alerte
+- Surveillances adaptées au contexte ${service ? `(${service})` : ""}`;
+    const resultsMarkdown = `**Résultats :**
+- Évolution clinique à renseigner
+- Réévaluation selon urgence ${urgency || "à préciser"}`;
+    const generatedMarkdown = `## Transmission ciblée DAR
 
 **Cible :** ${target || "à préciser"}
 
-**Données :**
-${situation}
+${dataMarkdown}
 
-**Actions :**
-- Actions IDE réalisées à compléter
-- Prévenir IDE/tuteur si signe d'alerte
-- Surveillances adaptées au contexte ${service ? `(${service})` : ""}
+${actionsMarkdown}
 
-**Résultats :**
-- Évolution clinique à renseigner
-- Réévaluation selon urgence ${urgency || "à préciser"}`);
+${resultsMarkdown}`;
+
+    setOutput(generatedMarkdown);
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setSaveMessage("Connecte-toi pour sauvegarder cette transmission.");
+        return;
+      }
+
+      const db = supabase as unknown as GenericInsertClient;
+      const { error } = await db.from("transmissions").insert({
+        user_id: user.id,
+        title: target || "Transmission ciblée",
+        situation,
+        target: target || null,
+        data_markdown: dataMarkdown,
+        actions_markdown: actionsMarkdown,
+        results_markdown: resultsMarkdown,
+        status: "generated"
+      });
+
+      setSaveMessage(error ? "Transmission générée, mais sauvegarde Supabase impossible." : "Transmission sauvegardée.");
+    } catch {
+      setSaveMessage("Transmission générée. Sauvegarde indisponible sur cet environnement.");
+    }
   }
 
   return (
@@ -63,9 +108,16 @@ ${situation}
         </Button>
       </form>
       {output ? (
-        <pre className="mt-5 whitespace-pre-wrap rounded-lg border border-[var(--border)] bg-[var(--glass)] p-4 text-sm leading-6">
-          {output}
-        </pre>
+        <>
+          {saveMessage ? (
+            <p className="mt-4 rounded-lg bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--muted)]">
+              {saveMessage}
+            </p>
+          ) : null}
+          <pre className="mt-5 whitespace-pre-wrap rounded-lg border border-[var(--border)] bg-[var(--glass)] p-4 text-sm leading-6">
+            {output}
+          </pre>
+        </>
       ) : null}
     </Card>
   );

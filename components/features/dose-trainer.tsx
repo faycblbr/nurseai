@@ -35,19 +35,46 @@ export function DoseTrainer() {
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
+  const [message, setMessage] = useState("");
 
   const exercise = exercises[index];
   const progress = useMemo(() => `${index + 1}/${exercises.length}`, [index]);
 
   function checkAnswer() {
+    setMessage("");
+    if (!answer.trim()) {
+      setResult(null);
+      setMessage("Entre une réponse avant de corriger.");
+      return;
+    }
+
     const normalized = Number(answer.replace(",", "."));
-    setResult(Math.abs(normalized - exercise.answer) < 0.2 ? "correct" : "wrong");
+    if (Number.isNaN(normalized)) {
+      setResult(null);
+      setMessage("Utilise uniquement un nombre, par exemple 62,5.");
+      return;
+    }
+
+    const nextResult = Math.abs(normalized - exercise.answer) < 0.2 ? "correct" : "wrong";
+    setResult(nextResult);
+
+    const attempt = {
+      statement: exercise.statement,
+      answer: normalized,
+      expected: exercise.answer,
+      correct: nextResult === "correct",
+      createdAt: new Date().toISOString()
+    };
+    const savedAttempts = window.localStorage.getItem("nurseai-dose-attempts");
+    const attempts = savedAttempts ? (JSON.parse(savedAttempts) as typeof attempt[]) : [];
+    window.localStorage.setItem("nurseai-dose-attempts", JSON.stringify([attempt, ...attempts].slice(0, 30)));
   }
 
   function nextExercise() {
     setIndex((current) => (current + 1) % exercises.length);
     setAnswer("");
     setResult(null);
+    setMessage("");
   }
 
   return (
@@ -95,6 +122,11 @@ export function DoseTrainer() {
             Suivant
           </Button>
         </form>
+        {message ? (
+          <p className="mt-4 rounded-lg bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--muted)]">
+            {message}
+          </p>
+        ) : null}
         {result ? (
           <div
             className={`mt-5 rounded-lg border p-4 ${

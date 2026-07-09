@@ -9,6 +9,7 @@ import {
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
+import { AppLogo } from "@/components/app/app-logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,13 +37,7 @@ export default function HomePage() {
     <main className="min-h-screen px-4 py-5 sm:px-6">
       <nav className="mx-auto flex max-w-7xl items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--glass)] px-3 py-3 backdrop-blur-2xl">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--foreground)] font-black text-[var(--background)]">
-            N
-          </div>
-          <div>
-            <p className="font-black">NurseAI</p>
-            <p className="text-xs text-[var(--muted)]">Assistant IFSI</p>
-          </div>
+          <AppLogo size="sm" />
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/connexion">

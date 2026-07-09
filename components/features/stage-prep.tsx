@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BookOpen, HeartPulse, Pill, Stethoscope } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, HeartPulse, Pill, Stethoscope, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,12 +32,28 @@ export function StagePrep() {
   const [service, setService] = useState<keyof typeof services>("Cardiologie");
   const [stageName, setStageName] = useState("");
   const [personalStages, setPersonalStages] = useState<string[]>([]);
+  const [message, setMessage] = useState("");
   const data = services[service];
 
+  useEffect(() => {
+    const savedStages = window.localStorage.getItem("nurseai-stages");
+    if (savedStages) {
+      setPersonalStages(JSON.parse(savedStages) as string[]);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("nurseai-stages", JSON.stringify(personalStages));
+  }, [personalStages]);
+
   function addStage() {
-    if (!stageName.trim()) return;
+    if (!stageName.trim()) {
+      setMessage("Ajoute un nom de stage.");
+      return;
+    }
     setPersonalStages((current) => [...current, stageName.trim()]);
     setStageName("");
+    setMessage("Stage ajouté à ton portfolio local.");
   }
 
   return (
@@ -67,12 +83,21 @@ export function StagePrep() {
         >
           <Input value={stageName} onChange={(event) => setStageName(event.target.value)} placeholder="Ex: Stage cardiologie S2" />
           <Button type="submit" className="w-full">Ajouter le stage</Button>
+          {message ? <p className="text-sm font-semibold text-[var(--muted)]">{message}</p> : null}
         </form>
         {personalStages.length > 0 ? (
           <div className="mt-4 space-y-2">
             {personalStages.map((stage) => (
-              <div key={stage} className="rounded-lg border border-[var(--border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold">
-                {stage}
+              <div key={stage} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--glass)] px-3 py-2 text-sm font-semibold">
+                <span>{stage}</span>
+                <button
+                  type="button"
+                  onClick={() => setPersonalStages((current) => current.filter((item) => item !== stage))}
+                  className="grid h-8 w-8 place-items-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--surface)] hover:text-[var(--danger)]"
+                  aria-label="Supprimer le stage"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                </button>
               </div>
             ))}
           </div>

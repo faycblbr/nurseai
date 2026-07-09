@@ -33,6 +33,34 @@ STRIPE_WEBHOOK_SECRET=ton_webhook_stripe_quand_pret
 
 La clé `SUPABASE_SERVICE_ROLE_KEY` doit rester serveur uniquement. Elle ne doit jamais être utilisée dans un composant client.
 
+## 3.1. Région Europe
+
+Le fichier `vercel.json` force les fonctions serveur Vercel en Europe, région Paris:
+
+```json
+{
+  "regions": ["cdg1"]
+}
+```
+
+Sur le plan Hobby, Vercel accepte une seule région de fonctions. Paris (`cdg1`) est le meilleur choix pour des utilisateurs français.
+
+Supabase doit aussi être en Europe. Dans Supabase, vérifie la région du projet dans les paramètres du projet. Si le projet actuel n'est pas en Europe, crée un nouveau projet Supabase en:
+
+```text
+Europe / Central EU (Frankfurt)
+```
+
+ou en région spécifique:
+
+```text
+West EU (Paris) eu-west-3
+Central EU (Frankfurt) eu-central-1
+West EU (Ireland) eu-west-1
+```
+
+Ensuite il faut relancer les migrations SQL dans ce nouveau projet et remplacer les variables Vercel par les nouvelles clés Supabase.
+
 ## 4. Configurer Supabase Auth
 
 Dans Supabase > Authentication > URL Configuration:

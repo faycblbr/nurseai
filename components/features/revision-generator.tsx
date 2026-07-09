@@ -6,12 +6,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+
+type InsertBuilder = {
+  insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+};
+
+type GenericInsertClient = {
+  from: (table: string) => InsertBuilder;
+};
 
 export function RevisionGenerator() {
   const [course, setCourse] = useState("");
   const [generated, setGenerated] = useState(false);
   const [selectedFile, setSelectedFile] = useState("");
   const [fileMessage, setFileMessage] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const keywords = useMemo(() => {
@@ -39,10 +49,49 @@ export function RevisionGenerator() {
       return;
     }
 
-    setCourse(
-      `Fichier sélectionné: ${file.name}\n\nPour l'instant, colle ici un extrait du cours pour générer la fiche. L'extraction automatique PDF/DOCX sera branchée côté serveur avec l'IA.`
-    );
-    setFileMessage("Fichier sélectionné. La fenêtre de ton ordinateur fonctionne bien.");
+    setCourse(`Fichier sélectionné: ${file.name}\n\nColle ici l'extrait important du cours pour générer une fiche guidée.`);
+    setFileMessage("Fichier sélectionné. Pour PDF/Word, colle l'extrait utile le temps que l'extraction serveur soit activée.");
+  }
+
+  async function generateCard() {
+    setSaveMessage("");
+    const canGenerate = course.trim().length > 20;
+    setGenerated(canGenerate);
+
+    if (!canGenerate) {
+      setSaveMessage("Ajoute au moins quelques lignes de cours avant de générer.");
+      return;
+    }
+
+    const summary = `Résumé guidé: ce cours semble tourner autour de ${
+      keywords.join(", ") || "notions clés à identifier"
+    }. Commence par isoler les définitions, risques, surveillances IDE et points à rechercher toi-même.`;
+
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setSaveMessage("Fiche générée. Connecte-toi pour la sauvegarder.");
+        return;
+      }
+
+      const db = supabase as unknown as GenericInsertClient;
+      const { error } = await db.from("revision_cards").insert({
+        user_id: user.id,
+        title: selectedFile || course.trim().slice(0, 72) || "Fiche de cours",
+        summary_markdown: summary,
+        flashcards: keywords.map((keyword) => ({ recto: keyword, verso: "À compléter avec ton cours" })),
+        quiz: keywords.slice(0, 3).map((keyword) => ({ question: `Explique ${keyword} avec tes mots.`, answer: "À vérifier dans le cours" })),
+        mindmap: { center: selectedFile || "Cours importé", branches: keywords }
+      });
+
+      setSaveMessage(error ? "Fiche générée, mais sauvegarde Supabase impossible." : "Fiche sauvegardée dans ton espace.");
+    } catch {
+      setSaveMessage("Fiche générée. Sauvegarde indisponible sur cet environnement.");
+    }
   }
 
   return (
@@ -83,7 +132,7 @@ export function RevisionGenerator() {
           id="revision-import"
           onSubmit={(event) => {
             event.preventDefault();
-            setGenerated(course.trim().length > 20);
+            void generateCard();
           }}
         >
           <Textarea
@@ -96,6 +145,11 @@ export function RevisionGenerator() {
             <UploadCloud className="h-4 w-4" aria-hidden />
             Importer et générer
           </Button>
+          {saveMessage ? (
+            <p className="mt-3 rounded-lg bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--muted)]">
+              {saveMessage}
+            </p>
+          ) : null}
         </form>
       </Card>
       <Card className="p-5">

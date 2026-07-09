@@ -125,7 +125,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Progression" value="0%" detail="Elle démarre quand tu crées tes premiers contenus." icon={Target} tone="blue" />
+        <StatCard label="Progression" value="0%" detail="Elle démarre quand tu crées tes premiers contenus." icon={Target} tone="aqua" />
         <StatCard label="Streak" value="0 jour" detail="Ton rythme sera calculé après tes sessions." icon={Flame} tone="peach" />
         <StatCard label="Travail" value="0h00" detail="Le temps de travail sera suivi automatiquement." icon={Clock3} tone="green" />
         <StatCard label="Documents" value={`${totalDocuments}`} detail="Tes démarches, transmissions et fiches apparaîtront ici." icon={FileText} tone="violet" />

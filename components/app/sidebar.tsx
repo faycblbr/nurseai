@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AppLogo } from "@/components/app/app-logo";
 import { appNavigation } from "@/config/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -12,13 +13,7 @@ export function Sidebar() {
   return (
     <aside className="hidden min-h-screen w-72 border-r border-[var(--border)] bg-[var(--glass)] px-4 py-5 shadow-[18px_0_55px_var(--shadow-soft)] backdrop-blur-2xl lg:block">
       <div className="mb-7 flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--glass-strong)] p-2 shadow-sm">
-        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--foreground)] text-lg font-bold text-[var(--background)] shadow-lg shadow-[color:var(--shadow-soft)]">
-          N
-        </div>
-        <div>
-          <p className="text-base font-bold tracking-normal">NurseAI</p>
-          <p className="text-xs font-medium text-[var(--muted)]">Assistant IFSI premium</p>
-        </div>
+        <AppLogo />
       </div>
       <nav className="space-y-1">
         {appNavigation.map((item) => {
