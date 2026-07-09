@@ -12,8 +12,24 @@ type AiAccess =
 
 const ACTIVE_STATUSES = new Set<SubscriptionStatus>(["trialing", "active"]);
 
+export type BillingAccess =
+  | { allowed: true; subscription: SubscriptionRow }
+  | { allowed: false; subscription: SubscriptionRow | null; reason: "not_configured" | "missing" | "inactive" | "expired" };
+
 export function isBillingConfigured() {
   return Boolean(env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID && env.STRIPE_WEBHOOK_SECRET);
+}
+
+export function isSubscriptionUsable(subscription?: Pick<SubscriptionRow, "status" | "stripe_subscription_id" | "current_period_end"> | null) {
+  if (!subscription?.stripe_subscription_id || !ACTIVE_STATUSES.has(subscription.status)) {
+    return false;
+  }
+
+  if (!subscription.current_period_end) {
+    return true;
+  }
+
+  return new Date(subscription.current_period_end).getTime() > Date.now();
 }
 
 export function stripeId(value: string | { id?: string } | null | undefined) {
@@ -102,6 +118,52 @@ export async function syncStripeSubscription(subscription: Stripe.Subscription, 
   }
 
   await admin.from("subscriptions").upsert(payload, { onConflict: "user_id" });
+}
+
+export async function getBillingAccess(userId: string): Promise<BillingAccess> {
+  if (process.env.NODE_ENV === "production" && !isBillingConfigured()) {
+    return {
+      allowed: false,
+      subscription: null,
+      reason: "not_configured"
+    };
+  }
+
+  const admin = createSupabaseAdminClient();
+  const { data: subscription } = await admin
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!subscription) {
+    return {
+      allowed: false,
+      subscription: null,
+      reason: "missing"
+    };
+  }
+
+  if (!subscription.stripe_subscription_id || !ACTIVE_STATUSES.has(subscription.status)) {
+    return {
+      allowed: false,
+      subscription,
+      reason: "inactive"
+    };
+  }
+
+  if (subscription.current_period_end && new Date(subscription.current_period_end).getTime() <= Date.now()) {
+    return {
+      allowed: false,
+      subscription,
+      reason: "expired"
+    };
+  }
+
+  return {
+    allowed: true,
+    subscription
+  };
 }
 
 export async function getAiAccess(userId: string): Promise<AiAccess> {

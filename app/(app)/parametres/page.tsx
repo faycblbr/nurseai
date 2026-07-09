@@ -235,18 +235,34 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <form action="/api/stripe/checkout" method="post">
-                <Button className="w-full" disabled={!stripeReady || hasStripeSubscription}>
+              {stripeReady && !hasStripeSubscription ? (
+                <a
+                  href="/api/stripe/checkout"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-medium text-white shadow-lg shadow-[color:var(--ring)] transition hover:bg-[var(--primary-dark)]"
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Activer l&apos;essai 30 jours
+                </a>
+              ) : (
+                <Button className="w-full" disabled>
                   <Sparkles className="h-4 w-4" aria-hidden />
                   Activer l&apos;essai 30 jours
                 </Button>
-              </form>
-              <form action="/api/stripe/portal" method="post">
-                <Button className="w-full" variant="secondary" disabled={!stripeReady || !canManageSubscription}>
+              )}
+              {stripeReady && canManageSubscription ? (
+                <a
+                  href="/api/stripe/portal"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--glass)] px-4 text-sm font-medium text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface)]"
+                >
+                  <CreditCard className="h-4 w-4" aria-hidden />
+                  Gérer l&apos;abonnement
+                </a>
+              ) : (
+                <Button className="w-full" variant="secondary" disabled>
                   <CreditCard className="h-4 w-4" aria-hidden />
                   Gérer l&apos;abonnement
                 </Button>
-              </form>
+              )}
             </div>
 
             {!stripeReady ? (

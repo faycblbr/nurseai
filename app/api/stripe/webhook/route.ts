@@ -67,6 +67,30 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     .eq("stripe_customer_id", customerId);
 }
 
+function invoiceSubscriptionId(invoice: Stripe.Invoice) {
+  const rawInvoice = invoice as unknown as {
+    subscription?: string | { id?: string } | null;
+    parent?: {
+      subscription_details?: {
+        subscription?: string | { id?: string } | null;
+      } | null;
+    } | null;
+  };
+
+  return stripeId(rawInvoice.subscription) ?? stripeId(rawInvoice.parent?.subscription_details?.subscription);
+}
+
+async function handleInvoicePaid(invoice: Stripe.Invoice) {
+  const subscriptionId = invoiceSubscriptionId(invoice);
+
+  if (!subscriptionId) {
+    return;
+  }
+
+  const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
+  await syncStripeSubscription(subscription);
+}
+
 export async function POST(request: Request) {
   if (!env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "Missing Stripe webhook secret." }, { status: 500 });
@@ -97,6 +121,9 @@ export async function POST(request: Request) {
       break;
     case "customer.subscription.deleted":
       await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+      break;
+    case "invoice.paid":
+      await handleInvoicePaid(event.data.object as Stripe.Invoice);
       break;
     case "invoice.payment_failed":
       await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);

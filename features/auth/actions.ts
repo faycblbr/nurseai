@@ -53,7 +53,7 @@ export async function signInAction(formData: FormData) {
     redirectWithError("/connexion", getSignInErrorMessage(error.message));
   }
 
-  redirect("/dashboard");
+  redirect("/activation");
 }
 
 export async function signUpAction(formData: FormData) {

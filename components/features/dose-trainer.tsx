@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 const exercises = [
   {
@@ -32,6 +33,7 @@ const exercises = [
 ];
 
 export function DoseTrainer() {
+  const premium = usePremium();
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
@@ -42,6 +44,12 @@ export function DoseTrainer() {
 
   function checkAnswer() {
     setMessage("");
+    if (!premium.active) {
+      setResult(null);
+      setMessage(getPremiumLockMessage("corriger les calculs de doses"));
+      return;
+    }
+
     if (!answer.trim()) {
       setResult(null);
       setMessage("Entre une réponse avant de corriger.");
@@ -71,6 +79,11 @@ export function DoseTrainer() {
   }
 
   function nextExercise() {
+    if (!premium.active) {
+      setMessage(getPremiumLockMessage("lancer une session complète de calculs"));
+      return;
+    }
+
     setIndex((current) => (current + 1) % exercises.length);
     setAnswer("");
     setResult(null);

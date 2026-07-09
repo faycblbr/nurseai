@@ -10,7 +10,8 @@ const protectedPrefixes = [
   "/stages",
   "/bibliotheque",
   "/agenda",
-  "/parametres"
+  "/parametres",
+  "/activation"
 ];
 
 function hasSupabaseSessionCookie(request: NextRequest) {

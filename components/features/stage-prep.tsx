@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 const services = {
   Cardiologie: {
@@ -29,6 +30,7 @@ const services = {
 };
 
 export function StagePrep() {
+  const premium = usePremium();
   const [service, setService] = useState<keyof typeof services>("Cardiologie");
   const [stageName, setStageName] = useState("");
   const [personalStages, setPersonalStages] = useState<string[]>([]);
@@ -47,6 +49,11 @@ export function StagePrep() {
   }, [personalStages]);
 
   function addStage() {
+    if (!premium.active) {
+      setMessage(getPremiumLockMessage("ajouter un stage personnalisé"));
+      return;
+    }
+
     if (!stageName.trim()) {
       setMessage("Ajoute un nom de stage.");
       return;

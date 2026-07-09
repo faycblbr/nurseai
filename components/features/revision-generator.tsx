@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 type InsertBuilder = {
   insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
@@ -18,6 +19,7 @@ type GenericInsertClient = {
 };
 
 export function RevisionGenerator() {
+  const premium = usePremium();
   const [course, setCourse] = useState("");
   const [generated, setGenerated] = useState(false);
   const [selectedFile, setSelectedFile] = useState("");
@@ -39,6 +41,11 @@ export function RevisionGenerator() {
       return;
     }
 
+    if (!premium.active) {
+      setFileMessage(getPremiumLockMessage("importer un cours"));
+      return;
+    }
+
     setSelectedFile(file.name);
     setGenerated(false);
 
@@ -57,6 +64,14 @@ export function RevisionGenerator() {
 
   async function generateCard() {
     setSaveMessage("");
+
+    if (!premium.active) {
+      setGenerated(false);
+      setGeneratedMarkdown("");
+      setSaveMessage(getPremiumLockMessage("générer une fiche depuis un cours"));
+      return;
+    }
+
     const canGenerate = course.trim().length > 20;
     setGenerated(canGenerate);
 

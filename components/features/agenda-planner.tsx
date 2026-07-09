@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 type AgendaEvent = {
   title: string;
@@ -14,6 +15,7 @@ type AgendaEvent = {
 };
 
 export function AgendaPlanner() {
+  const premium = usePremium();
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -32,6 +34,11 @@ export function AgendaPlanner() {
   }, [events]);
 
   function addEvent() {
+    if (!premium.active) {
+      setMessage(getPremiumLockMessage("ajouter des dates à ton agenda"));
+      return;
+    }
+
     if (!title.trim() || !date) {
       setMessage("Ajoute un titre et une date.");
       return;

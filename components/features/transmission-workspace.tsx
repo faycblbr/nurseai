@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 type InsertBuilder = {
   insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
@@ -18,6 +19,7 @@ type GenericInsertClient = {
 };
 
 export function TransmissionWorkspace() {
+  const premium = usePremium();
   const [target, setTarget] = useState("");
   const [service, setService] = useState("");
   const [urgency, setUrgency] = useState("");
@@ -27,6 +29,12 @@ export function TransmissionWorkspace() {
 
   async function prepare() {
     setSaveMessage("");
+
+    if (!premium.active) {
+      setOutput(getPremiumLockMessage("préparer et sauvegarder une transmission ciblée"));
+      setSaveMessage("Active l'essai gratuit pour débloquer les transmissions IA.");
+      return;
+    }
 
     if (!situation.trim()) {
       setOutput("Décris la situation avant de préparer une transmission.");

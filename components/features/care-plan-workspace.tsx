@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { coreCarePlanSections } from "@/config/navigation";
 import { requestAIGeneration } from "@/lib/ai/client";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 type InsertBuilder = {
   insert: (payload: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
@@ -65,6 +66,7 @@ const treatmentGuides = [
 ];
 
 export function CarePlanWorkspace() {
+  const premium = usePremium();
   const [context, setContext] = useState("");
   const [output, setOutput] = useState("");
   const [showConstants, setShowConstants] = useState(false);
@@ -93,6 +95,13 @@ Effet indésirable important: ${treatment.adverseEffect || "à vérifier"}`;
   async function generate() {
     setSaveState("idle");
     setSaveMessage("");
+
+    if (!premium.active) {
+      setOutput(getPremiumLockMessage("générer et sauvegarder une démarche de soins"));
+      setSaveState("error");
+      setSaveMessage("Active l'essai gratuit pour débloquer la génération IA, la sauvegarde et les exports.");
+      return;
+    }
 
     if (context.trim().length < 20) {
       setOutput("Ajoute plus de contexte patient pour générer une démarche exploitable.");

@@ -15,14 +15,14 @@ function redirectToSettings(message: string, isError = false) {
   );
 }
 
-export async function POST() {
+async function createPortal() {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion` as Route, { status: 303 });
+    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion?next=/activation` as Route, { status: 303 });
   }
 
   const admin = createSupabaseAdminClient();
@@ -33,7 +33,10 @@ export async function POST() {
     .maybeSingle();
 
   if (!subscription?.stripe_customer_id) {
-    return redirectToSettings("Active d'abord l'essai gratuit pour gérer l'abonnement.", true);
+    return NextResponse.redirect(
+      `${env.NEXT_PUBLIC_APP_URL}/activation?error=${encodeURIComponent("Active d'abord l'essai gratuit pour gérer l'abonnement.")}`,
+      { status: 303 }
+    );
   }
 
   try {
@@ -46,4 +49,12 @@ export async function POST() {
   } catch {
     return redirectToSettings("Le portail Stripe doit être activé dans ton tableau de bord Stripe.", true);
   }
+}
+
+export async function GET() {
+  return createPortal();
+}
+
+export async function POST() {
+  return createPortal();
 }

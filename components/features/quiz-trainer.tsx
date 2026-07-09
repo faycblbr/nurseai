@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getPremiumLockMessage, usePremium } from "@/components/billing/premium-provider";
 
 const questions = [
   {
@@ -31,14 +32,22 @@ const questions = [
 ];
 
 export function QuizTrainer() {
+  const premium = usePremium();
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
   const question = questions[current];
   const isAnswered = selected !== null;
 
   function next() {
+    if (!premium.active) {
+      setMessage(getPremiumLockMessage("enchaîner les quiz d'entraînement"));
+      return;
+    }
+
     setCurrent((value) => (value + 1) % questions.length);
     setSelected(null);
+    setMessage("");
   }
 
   return (
@@ -50,8 +59,13 @@ export function QuizTrainer() {
             <button
               key={item.prompt}
               onClick={() => {
+                if (!premium.active) {
+                  setMessage(getPremiumLockMessage("changer de parcours quiz"));
+                  return;
+                }
                 setCurrent(index);
                 setSelected(null);
+                setMessage("");
               }}
               className={`w-full rounded-lg border px-3 py-3 text-left text-sm font-semibold ${
                 index === current ? "border-[var(--primary)] bg-[var(--surface)]" : "border-[var(--border)] bg-[var(--glass)]"
@@ -73,7 +87,14 @@ export function QuizTrainer() {
             return (
               <button
                 key={choice}
-                onClick={() => setSelected(index)}
+                onClick={() => {
+                  if (!premium.active) {
+                    setMessage(getPremiumLockMessage("répondre aux quiz"));
+                    return;
+                  }
+                  setSelected(index);
+                  setMessage("");
+                }}
                 className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left font-semibold ${
                   correct
                     ? "border-green-200 bg-green-50"
@@ -93,6 +114,11 @@ export function QuizTrainer() {
           <div className="mt-5 rounded-lg bg-[var(--surface)] p-4 text-sm leading-6 text-[var(--muted)]">
             {question.explanation}
           </div>
+        ) : null}
+        {message ? (
+          <p className="mt-4 rounded-lg bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--muted)]">
+            {message}
+          </p>
         ) : null}
         <Button className="mt-5" onClick={next}>Question suivante</Button>
       </Card>

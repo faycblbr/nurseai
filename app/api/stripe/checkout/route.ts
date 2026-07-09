@@ -4,20 +4,21 @@ import { env } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/server/supabase/admin";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getStripeClient } from "@/server/stripe/client";
+import { isBillingConfigured } from "@/server/billing/subscription";
 
 export const runtime = "nodejs";
 
-function redirectToSettings(message: string, isError = false) {
+function redirectToActivation(message: string, isError = false) {
   const key = isError ? "error" : "message";
   return NextResponse.redirect(
-    `${env.NEXT_PUBLIC_APP_URL}/parametres?${key}=${encodeURIComponent(message)}`,
+    `${env.NEXT_PUBLIC_APP_URL}/activation?${key}=${encodeURIComponent(message)}`,
     { status: 303 }
   );
 }
 
-export async function POST() {
-  if (!env.STRIPE_PRICE_ID) {
-    return redirectToSettings("Stripe n'est pas configuré: il manque STRIPE_PRICE_ID.", true);
+async function createCheckout() {
+  if (!isBillingConfigured()) {
+    return redirectToActivation("Stripe n'est pas complètement configuré dans Vercel.", true);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -26,7 +27,7 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion` as Route, { status: 303 });
+    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/connexion?next=/activation` as Route, { status: 303 });
   }
 
   const admin = createSupabaseAdminClient();
@@ -43,12 +44,7 @@ export async function POST() {
     existingSubscription.stripe_subscription_id &&
     (existingSubscription.status === "trialing" || existingSubscription.status === "active")
   ) {
-    const portal = await stripe.billingPortal.sessions.create({
-      customer: existingSubscription.stripe_customer_id,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/parametres`
-    });
-
-    return NextResponse.redirect(portal.url, { status: 303 });
+    return NextResponse.redirect(`${env.NEXT_PUBLIC_APP_URL}/dashboard?message=${encodeURIComponent("Ton accès Premium est déjà actif.")}`, { status: 303 });
   }
 
   const { data: profile } = await admin
@@ -74,6 +70,7 @@ export async function POST() {
       {
         user_id: user.id,
         stripe_customer_id: customerId,
+        status: "canceled",
         ai_monthly_quota: env.AI_MONTHLY_QUOTA,
         updated_at: new Date().toISOString()
       },
@@ -85,6 +82,9 @@ export async function POST() {
     mode: "subscription",
     customer: customerId,
     client_reference_id: user.id,
+    metadata: {
+      supabase_user_id: user.id
+    },
     line_items: [
       {
         price: env.STRIPE_PRICE_ID,
@@ -99,6 +99,7 @@ export async function POST() {
     },
     allow_promotion_codes: true,
     billing_address_collection: "auto",
+    payment_method_collection: "always",
     customer_update: {
       address: "auto",
       name: "auto"
@@ -109,15 +110,21 @@ export async function POST() {
       }
     },
     locale: "fr",
-    success_url: `${env.NEXT_PUBLIC_APP_URL}/parametres?message=${encodeURIComponent(
-      "Essai gratuit activé. Stripe confirme l'abonnement dans quelques secondes."
-    )}`,
-    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/parametres?error=${encodeURIComponent("Activation annulée.")}`
+    success_url: `${env.NEXT_PUBLIC_APP_URL}/api/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/activation?error=${encodeURIComponent("Activation annulée.")}`
   });
 
   if (!session.url) {
-    return redirectToSettings("Impossible d'ouvrir Stripe Checkout.", true);
+    return redirectToActivation("Impossible d'ouvrir Stripe Checkout.", true);
   }
 
   return NextResponse.redirect(session.url, { status: 303 });
+}
+
+export async function GET() {
+  return createCheckout();
+}
+
+export async function POST() {
+  return createCheckout();
 }
