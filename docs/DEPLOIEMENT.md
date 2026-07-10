@@ -40,7 +40,7 @@ La clé `SUPABASE_SERVICE_ROLE_KEY` doit rester serveur uniquement. Elle ne doit
 
 Les clés `OPENAI_API_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID` et `STRIPE_WEBHOOK_SECRET` doivent aussi rester dans Vercel. Ne les mets jamais dans GitHub, dans le code, dans une page, ou dans un composant React client.
 
-## 3.2. Activer Stripe: essai 30 jours puis 7 €/mois
+## 3.2. Activer Stripe: essai 30 jours puis 4,99 €/mois
 
 1. Va sur Stripe Dashboard.
 2. Crée un produit: `NurseAI Premium`.
@@ -81,7 +81,7 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxx
 
 10. Redéploie Vercel.
 
-L'essai gratuit de 30 jours est créé par le code au moment du passage dans Stripe Checkout. Le paiement démarre ensuite automatiquement à 7 €/mois si l'utilisateur ne résilie pas.
+L'essai gratuit de 30 jours est créé par le code au moment du passage dans Stripe Checkout. Le paiement démarre ensuite automatiquement à 4,99 €/mois si l'utilisateur ne résilie pas.
 
 ## 3.3. Activer OpenAI
 
@@ -207,7 +207,7 @@ Dans App Store Connect > NurseAI > Subscriptions:
 2. Crée un abonnement auto-renouvelable:
    - Product ID: `premium_monthly`
    - Nom: `NurseAI Premium mensuel`
-   - Prix: `7,00 € / mois`
+   - Prix: `4,99 € / mois`
 3. Ajoute une offre d'introduction:
    - Type: `Free Trial`
    - Durée: `1 month`

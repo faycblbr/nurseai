@@ -49,7 +49,7 @@ async function buildResponse(request: Request, rawPayload: unknown) {
 
   if (isRateLimited(key)) {
     return NextResponse.json(
-      { error: "Trop de quiz generes en peu de temps. Reessaie dans une minute." },
+      { error: "Trop de quiz générés en peu de temps. Réessaie dans une minute." },
       { status: 429 }
     );
   }
@@ -57,12 +57,12 @@ async function buildResponse(request: Request, rawPayload: unknown) {
   const payload = requestSchema.safeParse(rawPayload);
 
   if (!payload.success) {
-    return NextResponse.json({ error: "Choisis un theme de quiz plus court." }, { status: 400 });
+    return NextResponse.json({ error: "Choisis un thème de quiz plus court." }, { status: 400 });
   }
 
   if (containsObviousPersonalData(payload.data.focus)) {
     return NextResponse.json(
-      { error: "Retire toute donnee personnelle ou patient avant d'utiliser le quiz IA." },
+      { error: "Retire toute donnée personnelle ou patient avant d'utiliser le quiz IA." },
       { status: 400 }
     );
   }
@@ -78,7 +78,7 @@ async function buildResponse(request: Request, rawPayload: unknown) {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   return buildResponse(request, {
-    focus: url.searchParams.get("focus") ?? "revision IFSI generale",
+    focus: url.searchParams.get("focus") ?? "révision IFSI générale",
     count: Number(url.searchParams.get("count") ?? 6)
   });
 }

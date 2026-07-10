@@ -17,7 +17,7 @@ export type NativeQuizPayload = {
   source: "openai-selected-curated-bank" | "local-curated-bank";
   sourceLabel: string;
   disclaimer: string;
-  tariffLabel: "7,00 € / mois";
+  tariffLabel: "4,99 € / mois";
   questions: NativeQuizQuestion[];
 };
 
@@ -46,8 +46,8 @@ function buildPayload(
     source,
     sourceLabel,
     disclaimer:
-      "Quiz pedagogique IFSI. Les questions viennent d'une banque verifiee NurseAI; aucune donnee patient ne doit etre saisie.",
-    tariffLabel: "7,00 € / mois",
+      "Quiz pédagogique IFSI. Les questions viennent d'une banque vérifiée NurseAI; aucune donnée patient ne doit être saisie.",
+    tariffLabel: "4,99 € / mois",
     questions: questions.map(toNativeQuestion)
   };
 }
@@ -59,12 +59,12 @@ function extractJson(text: string) {
 }
 
 function fallbackQuiz(focus: string, count: number) {
-  return buildPayload("local-curated-bank", selectFallbackQuiz(focus, count), "Banque IFSI securisee");
+  return buildPayload("local-curated-bank", selectFallbackQuiz(focus, count), "Banque IFSI sécurisée");
 }
 
 export async function generateNativeQuiz({ focus, count }: { focus: string; count: number }) {
   const safeCount = Math.min(Math.max(count, 4), 8);
-  const cleanFocus = focus.trim() || "revision IFSI generale";
+  const cleanFocus = focus.trim() || "révision IFSI générale";
 
   if (!env.OPENAI_API_KEY) {
     return fallbackQuiz(cleanFocus, safeCount);
@@ -83,14 +83,14 @@ export async function generateNativeQuiz({ focus, count }: { focus: string; coun
       model: env.OPENAI_MODEL,
       temperature: 0.1,
       instructions: `Tu es un routeur de quiz pour NurseAI.
-Tu ne dois JAMAIS creer de question, de reponse, de correction ou de fait medical.
-Tu selectionnes uniquement des identifiants existants dans la banque fournie.
+Tu ne dois JAMAIS créer de question, de réponse, de correction ou de fait médical.
+Tu sélectionnes uniquement des identifiants existants dans la banque fournie.
 Retourne uniquement du JSON valide au format: {"selectedIds":["id-1","id-2"]}.
-Objectif: choisir un parcours pertinent, varie, et pedagogique pour un etudiant IFSI en France.`,
-      input: `Focus demande: ${cleanFocus}
+Objectif: choisir un parcours pertinent, varié, et pédagogique pour un étudiant IFSI en France.`,
+      input: `Focus demandé: ${cleanFocus}
 Nombre de questions: ${safeCount}
 
-Banque autorisee:
+Banque autorisée:
 ${bankSummary}`
     });
 
@@ -113,7 +113,7 @@ ${bankSummary}`
       return fallbackQuiz(cleanFocus, safeCount);
     }
 
-    return buildPayload("openai-selected-curated-bank", uniqueSelected, "IA + banque verifiee");
+    return buildPayload("openai-selected-curated-bank", uniqueSelected, "IA + banque vérifiée");
   } catch {
     return fallbackQuiz(cleanFocus, safeCount);
   }

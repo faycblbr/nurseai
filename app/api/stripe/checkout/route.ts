@@ -108,7 +108,7 @@ async function createCheckout(request: Request) {
     },
     custom_text: {
       submit: {
-        message: "Essai gratuit 30 jours, puis 7 €/mois. Annulation possible depuis ton espace abonnement."
+        message: "Essai gratuit 30 jours, puis 4,99 €/mois. Annulation possible depuis ton espace abonnement."
       }
     },
     locale: "fr",

@@ -193,7 +193,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <div>
               <h2 className="text-lg font-black">Abonnement et quotas</h2>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                30 jours gratuits, puis 7 €/mois. Paiement sécurisé par Stripe, clés et cartes jamais stockées dans NurseAI.
+                30 jours gratuits, puis 4,99 €/mois. Paiement sécurisé par Stripe, clés et cartes jamais stockées dans NurseAI.
               </p>
             </div>
             <Badge>{subscriptionBadge}</Badge>
@@ -228,7 +228,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                   {hasStripeSubscription
                     ? "Tu peux modifier ta carte, télécharger tes factures ou annuler depuis le portail sécurisé Stripe."
-                    : "L'essai débloque l'IA réelle pendant 30 jours. Ensuite, Stripe facture 7 €/mois si tu gardes l'abonnement."}
+                    : "L'essai débloque l'IA réelle pendant 30 jours. Ensuite, Stripe facture 4,99 €/mois si tu gardes l'abonnement."}
                 </p>
               </div>
             </div>

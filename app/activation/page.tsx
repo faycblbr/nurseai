@@ -99,7 +99,7 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
             <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
               Démarre ton mois d&apos;essai pour tester NurseAI en conditions réelles: démarches de soins,
               calculs de doses, fiches, quiz et préparation de stage. Tu gardes le contrôle: 30 jours offerts,
-              puis 7 €/mois seulement si tu continues.
+              puis 4,99 €/mois seulement si tu continues.
             </p>
 
             <AuthFeedback error={params?.error} message={params?.message} />
@@ -180,7 +180,7 @@ export default async function ActivationPage({ searchParams }: ActivationPagePro
 
             <div className="mt-5 rounded-lg bg-[var(--background)] p-4 text-sm leading-6 text-[var(--muted)]">
               Aujourd&apos;hui: <span className="font-bold text-[var(--foreground)]">0 € pendant 30 jours</span>. Ensuite:{" "}
-              <span className="font-bold text-[var(--foreground)]">7 €/mois</span>. IA incluse:{" "}
+              <span className="font-bold text-[var(--foreground)]">4,99 €/mois</span>. IA incluse:{" "}
               <span className="font-bold text-[var(--foreground)]">{env.AI_MONTHLY_QUOTA} générations/mois</span>.
             </div>
           </Card>

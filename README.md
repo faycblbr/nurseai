@@ -9,7 +9,7 @@ Assistant IA premium pour étudiants infirmiers francophones.
 - TailwindCSS v3
 - Supabase Auth, PostgreSQL, Storage, RLS
 - OpenAI API via une couche serveur centralisée
-- Stripe Checkout: essai 30 jours puis abonnement 7 €/mois
+- Stripe Checkout: essai 30 jours puis abonnement 4,99 €/mois
 
 ## Démarrage
 
