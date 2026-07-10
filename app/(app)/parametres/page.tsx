@@ -31,7 +31,6 @@ type SettingsProfile = {
 };
 
 type UserSettings = {
-  dark_mode: boolean;
   email_notifications: boolean;
   push_notifications: boolean;
   privacy: Json;
@@ -101,7 +100,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
     const settingsResult = await supabase
       .from("settings")
-      .select("dark_mode, email_notifications, push_notifications, privacy")
+      .select("email_notifications, push_notifications, privacy")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -297,12 +296,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               title="Notifications mobile"
               description="Prévu pour l'application iOS/Android quand le wrapper mobile sera branché."
               defaultChecked={settings?.push_notifications ?? false}
-            />
-            <SwitchRow
-              name="darkMode"
-              title="Mode sombre"
-              description="Coche, puis enregistre les préférences: l'interface bascule après le rechargement."
-              defaultChecked={settings?.dark_mode ?? false}
             />
           </div>
         </Card>

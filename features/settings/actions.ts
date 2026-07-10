@@ -99,7 +99,7 @@ export async function updatePreferencesAction(formData: FormData) {
 
   const { error } = await db.from("settings").upsert({
     user_id: user.id,
-    dark_mode: checked(formData, "darkMode"),
+    dark_mode: false,
     email_notifications: checked(formData, "emailNotifications"),
     push_notifications: checked(formData, "pushNotifications"),
     privacy,

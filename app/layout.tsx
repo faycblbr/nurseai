@@ -1,10 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { createSupabaseServerClient } from "@/server/supabase/server";
 import "./globals.css";
-
-type ThemeSettings = {
-  dark_mode: boolean;
-};
 
 export const metadata: Metadata = {
   title: {
@@ -28,31 +23,9 @@ export const viewport: Viewport = {
   themeColor: "#0CC4A3"
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  let darkMode = false;
-
-  try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      const { data } = await supabase
-        .from("settings")
-        .select("dark_mode")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const settings = data as ThemeSettings | null;
-      darkMode = Boolean(settings?.dark_mode);
-    }
-  } catch {
-    darkMode = false;
-  }
-
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={darkMode ? "dark" : undefined} suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );
